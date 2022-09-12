@@ -61,7 +61,7 @@ class QPAM():
         return prepared/self.norm
         
     
-    def prepare(self, digital_amplitudes, size, Print=False):
+    def prepare(self, digital_amplitudes, size, regnames, Print=False):
         '''Creates a qiskit QuantumCircuit that prepares
         a Quantum Audio state using QPAM 
         (Quantum Probability Amplitude Modulation) Representation
@@ -80,7 +80,7 @@ class QPAM():
         lsize=size[0]
         
         # Creates a Quantum Circuit
-        l = QuantumRegister(lsize, 't')
+        l = QuantumRegister(lsize, regnames[0])
         qpam = QuantumCircuit(l)
         
         # Value Setting Operation
@@ -213,7 +213,7 @@ class SQ_PAM():
         '''
         return np.arcsin(np.sqrt((original_audio+1)/2))
     
-    def prepare(self, thetas, size, Print=False):
+    def prepare(self, thetas, size, regnames, Print=False):
         '''Creates a qiskit QuantumCircuit that prepares
         a Quantum Audio State using
         SQ-PAM (Single-Qubit Probability Ampolitude Modulation) Representation
@@ -230,9 +230,9 @@ class SQ_PAM():
         # so 'qsize' is necessarily 1
         lsize=size[0]
         # Time register
-        l = QuantumRegister(lsize, 't')
+        l = QuantumRegister(lsize, regnames[0])
         # Amplitude register
-        q = QuantumRegister(1, 'a')
+        q = QuantumRegister(1, regname[1])
 
         # Init quantum circuit
         sq_pam = QuantumCircuit()
@@ -397,9 +397,9 @@ class QSM():
         lsize=size[0]
         qsize=size[1]
         # Time register
-        l = QuantumRegister(lsize, tregname)
+        l = QuantumRegister(lsize, regname[0])
         # Amplitude register
-        q = QuantumRegister(qsize, aregname)
+        q = QuantumRegister(qsize, regname[1])
 
         # Init quantum circuit
         qsm = QuantumCircuit()
@@ -519,7 +519,7 @@ class QuantumAudio():
     
     def prepare(self, tregname='t', aregname='a', Print=False):
         self.convert()
-        self.circuit = self.encoder.prepare(self.encoder, self.converted_input, (self.lsize, self.qsize), tregname, aregname, Print)
+        self.circuit = self.encoder.prepare(self.encoder, self.converted_input, (self.lsize, self.qsize), (tregname, aregname), Print)
         return self
     
     def measure(self, treg_pos=None, areg_pos=None):
