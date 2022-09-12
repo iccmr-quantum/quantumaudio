@@ -1,2 +1,5 @@
 sinewave.flac
 .ipynb_checkpoints/*
+*egg-info*
+build/
+quantumaudio/__pycache__/*
