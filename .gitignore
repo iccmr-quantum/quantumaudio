@@ -3,3 +3,4 @@ sinewave.flac
 *egg-info*
 build/
 quantumaudio/__pycache__/*
+qa/*
