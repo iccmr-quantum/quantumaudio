@@ -232,7 +232,7 @@ class SQ_PAM():
         # Time register
         l = QuantumRegister(lsize, regnames[0])
         # Amplitude register
-        q = QuantumRegister(1, regname[1])
+        q = QuantumRegister(1, regnames[1])
 
         # Init quantum circuit
         sq_pam = QuantumCircuit()
