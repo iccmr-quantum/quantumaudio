@@ -1,1 +1,1 @@
-from .quantumaudio import QuantumAudio
+from .quantumaudio import QuantumAudio, QPAM, SQPAM, QSM

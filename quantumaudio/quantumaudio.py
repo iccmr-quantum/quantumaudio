@@ -25,13 +25,13 @@ class EncodingScheme():
     def __init__(self):
         self._qa_encoders = {
             "qpam": QPAM, 
-            "sq-pam": SQ_PAM,
+            "sqpam": SQPAM,
             "qsm": QSM,
         }
     def get_encoder(self, encoder_name):
         encoder = self._qa_encoders.get(encoder_name)
         if not encoder:
-            return ValueError(encoder_name)
+            raise ValueError(f'"{encoder_name}" is not a valid name. Valid representations are: {list(self._qa_encoders.keys())}')
         return encoder    
 
 
@@ -135,7 +135,7 @@ class QPAM():
 
 
 
-class SQ_PAM():
+class SQPAM():
     def __init__(self):
         pass
     
@@ -382,7 +382,7 @@ class QSM():
         '''for the QSM encoding scheme, this function is dummy.'''
         return original_audio
         
-    def prepare(self, digital_audio, size, tregname='t', aregname='a', Print=False):
+    def prepare(self, digital_audio, size, regnames, Print=False):
         '''Creates a qiskit QuantumCircuit that prepares
         a Quantum Audio State using
         QSM (Quantum State Modulation) Representation
@@ -397,9 +397,9 @@ class QSM():
         lsize=size[0]
         qsize=size[1]
         # Time register
-        l = QuantumRegister(lsize, regname[0])
+        l = QuantumRegister(lsize, regnames[0])
         # Amplitude register
-        q = QuantumRegister(qsize, regname[1])
+        q = QuantumRegister(qsize, regnames[1])
 
         # Init quantum circuit
         qsm = QuantumCircuit()
@@ -495,7 +495,7 @@ class QuantumAudio():
         
         if self.encoder_name == 'qpam':
             self.qsize = 0
-        elif self.encoder_name == 'sq-pam':
+        elif self.encoder_name == 'sqpam':
             self.qsize = 1
         else:
             self.qsize = qsize       
@@ -555,7 +555,7 @@ class QuantumAudio():
         
         additional_args = []
         
-        if self.encoder_name == 'qpam' or self.encoder_name == 'sq-pam':
+        if self.encoder_name == 'qpam' or self.encoder_name == 'sqpam':
             additional_args += [self.shots]        
 
         self.output = self.encoder.reconstruct(self, self.lsize, self.counts,                                                *additional_args, **additional_kwargs)
