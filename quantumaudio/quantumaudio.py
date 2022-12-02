@@ -87,8 +87,8 @@ class QPAM():
         qpam.initialize(list(digital_amplitudes), l)
             
         if Print:
-            for i in range(len(digital_amplitudes)):
-                print('%.3f|%d>' %(digital_amplitudes[i], i), end='')
+            for i, amps in enumerate(digital_amplitudes):
+                print('%.3f|%d>' %(amps, i), end='')
                 if i<len(digital_amplitudes)-1:
                     print(' + ', end='')
                 else:
@@ -157,11 +157,11 @@ class SQPAM():
         t == 6 -> 00110 applies X gates to qubits 0, 3 and 4.
         '''
         tstr=[]
-        for i in range(l.size):
+        for i, l_qubit in enumerate(l):
             tBit = (t>>i)&1
             tstr.append(tBit)
             if not tBit:
-                qa.x(l[i])
+                qa.x(l_qubit)
         if Print:
             print('|',end='')
 
@@ -213,12 +213,12 @@ class SQPAM():
         '''
         return np.arcsin(np.sqrt((original_audio+1)/2))
     
-    def prepare(self, thetas, size, regnames, Print=False):
+    def prepare(self, angles, size, regnames, Print=False):
         '''Creates a qiskit QuantumCircuit that prepares
         a Quantum Audio State using
         SQ-PAM (Single-Qubit Probability Ampolitude Modulation) Representation
 
-        -thetas -> (numpy ndarray) array of angles bettween [0, pi/2]
+        -angles -> (numpy ndarray) array of angles bettween [0, pi/2]
         -size -> (Tuple(int,int)) time (lsize) and amplitude (qsize) register sizes, respectively
             Note: for SQ-PAM, qsize is ALWAYS 1
             
@@ -243,9 +243,9 @@ class SQPAM():
         sq_pam.h(l) 
         
         # Value setting operations
-        for i in range(len(thetas)):        
-            self.r2th_x(self, sq_pam, i, thetas[i], l, q, Print)
-            if  Print and i!=len(thetas)-1:
+        for i, theta in enumerate(angles):        
+            self.r2th_x(self, sq_pam, i, theta, l, q, Print)
+            if  Print and i!=len(angles)-1:
                 print(' + ')
         if Print:
             print()  
@@ -333,11 +333,11 @@ class QSM():
         t == 6 -> 00110 applies X gates to qubits 0, 3 and 4.
         '''
         tstr=[]
-        for i in range(l.size):
+        for i, l_qubit in enumerate(l):
             tBit = (t>>i)&1
             tstr.append(tBit)
             if not tBit:
-                qc.x(l[i])
+                qc.x(l_qubit)
         if Print:
             print('(x)|',end='')
 
@@ -363,11 +363,11 @@ class QSM():
         self.t_x(self, qa, t, l)
         astr=[]
         # Flips a qubit everytime aBit==1
-        for i in range(q.size):
+        for i, q_qubit in enumerate(q):
             aBit = (a>>i)&1
             astr.append(aBit)
             if aBit:
-                qa.mct(l, q[i])
+                qa.mct(l, q_qubit)
 
         if Print:        
             print('|',end='')       
@@ -410,8 +410,8 @@ class QSM():
         qsm.h(l)
 
         # Value setting operations
-        for i in range(len(digital_audio)):        
-            self.omega_t(self, qsm, i, digital_audio[i], l, q, Print)
+        for i, sample in enumerate(digital_audio):        
+            self.omega_t(self, qsm, i, sample, l, q, Print)
             if Print and i!=len(digital_audio)-1:
                 print(' + ', end='')
         if Print:
