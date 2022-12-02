@@ -2,7 +2,7 @@ from quantumaudio import QuantumAudio, QPAM, SQPAM, QSM
 from qiskit.result.counts import Counts
 import pytest
 import numpy as np
-
+import sys
 
 def test_raise_encoder_name_empty_error():
     print("here first")
@@ -122,3 +122,24 @@ def test_reconstruction_qsm(qsm_loaded):
     qsm_loaded.reconstruct_audio()
     assert np.sum((qsm_loaded.output - qsm_loaded.input)) == 0
 
+def test_print_qpam(qpam_loaded, capfd):
+    qpam_loaded.prepare(Print=True)
+    out, err = capfd.readouterr()
+    assert out == '0.324|0> + 0.243|1> + 0.487|2> + 0.568|3> + 0.081|4> + 0.000|5> + 0.406|6> + 0.324|7>\n'
+
+def test_print_sqpam(sqpam_loaded, capfd):
+    sqpam_loaded.prepare(Print=True)
+    out, err = capfd.readouterr()
+    assert out == '[cos(0.785)|0> + sin(0.785)|1>]|000> + \n\
+[cos(0.659)|0> + sin(0.659)|1>]|001> + \n\
+[cos(1.047)|0> + sin(1.047)|1>]|010> + \n\
+[cos(1.209)|0> + sin(1.209)|1>]|011> + \n\
+[cos(0.361)|0> + sin(0.361)|1>]|100> + \n\
+[cos(0.000)|0> + sin(0.000)|1>]|101> + \n\
+[cos(0.912)|0> + sin(0.912)|1>]|110> + \n\
+[cos(0.785)|0> + sin(0.785)|1>]|111>\n'
+
+def test_print_qsm(qsm_loaded, capfd):
+    qsm_loaded.prepare(Print=True)
+    out, err = capfd.readouterr()
+    assert out == '|000>(x)|000> + |111>(x)|001> + |010>(x)|010> + |011>(x)|011> + |101>(x)|100> + |100>(x)|101> + |001>(x)|110> + |000>(x)|111>\n'

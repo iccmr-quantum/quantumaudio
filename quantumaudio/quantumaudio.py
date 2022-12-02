@@ -412,7 +412,7 @@ class QSM():
         # Value setting operations
         for i in range(len(digital_audio)):        
             self.omega_t(self, qsm, i, digital_audio[i], l, q, Print)
-            if Print and i!=len(digitalAudio)-1:
+            if Print and i!=len(digital_audio)-1:
                 print(' + ', end='')
         if Print:
             print()  
