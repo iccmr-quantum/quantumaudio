@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# ## Quantum Representations of Audio
-# ### Class Implementation
-
-
-
+# #     quantumaudio
+# ## A Python Class Implementation for Quantum Representations of Audio
 
 import numpy as np
 import numpy.typing as npt
@@ -19,31 +16,14 @@ from bitstring import BitArray
 from IPython.display import display, Audio
 import matplotlib.pyplot as plt
 import warnings
-
-
-
-class EncodingScheme():
-    def __init__(self):
-        self._qa_encoders = {
-            "qpam": QPAM, 
-            "sqpam": SQPAM,
-            "qsm": QSM,
-        }
-    def get_encoder(self, encoder_name: str):
-        """Returns: encoder class associated with name.
-        """
-        encoder = self._qa_encoders.get(encoder_name)
-        if not encoder:
-            raise ValueError(f'"{encoder_name}" is not a valid name. Valid representations are: {list(self._qa_encoders.keys())}')
-        return encoder    
-
-
+from typing import TypeVar, Optional, Tuple, Any
 
 
 
 # ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 # =================================== QPAM =====================================
 # ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 class QPAM():
     def __init__(self):
         self.norm = 1.
@@ -67,9 +47,8 @@ class QPAM():
         prepared = (originalAudio.copy()+1)/2
         self.norm = np.linalg.norm(prepared)
         return prepared/self.norm
-        
     
-    def prepare(self, digital_amplitudes, size, regnames, Print=False) -> 'QuantumCircuit':
+    def prepare(self, digital_amplitudes: npt.NDArray, size: Tuple[int, int], regnames: Tuple[str, str], Print: bool = False) -> 'QuantumCircuit':
         """Prepares a QPAM quantum circuit.
 
         Creates a qiskit QuantumCircuit that prepares a Quantum Audio state 
@@ -117,7 +96,7 @@ class QPAM():
                     print()
         return qpam
     
-    def measure(self, qc, treg_pos=0) -> None:
+    def measure(self, qc: 'QuantumCircuit', treg_pos: int = 0) -> None:
         """Appends Measurements to a QPAM audio circuit
         
         From a quantum circuit with a register containing a QPAM 
@@ -136,7 +115,7 @@ class QPAM():
         qc.add_register(ct)
         qc.measure(t, ct)
         
-    def reconstruct(self, lsize, counts, shots, g=None) -> npt.NDArray:
+    def reconstruct(self, lsize: int, counts: 'Counts', shots: int, g: Optional[float] = None) -> npt.NDArray:
         """Builds a digital Audio from qiskit histogram data.
 
         Considering the QPAM encoding scheme, it uses the histogram data stored 
@@ -155,7 +134,7 @@ class QPAM():
         Returns:
             A Digital Audio as a Numpy Array. The signal is in float format.
         """
-        g=self.norm if g is None else g
+        g = self.norm if g is None else g
         
 #         print('QPAM Reconstruct')
         # Builds a zeroed ndarray
@@ -168,9 +147,11 @@ class QPAM():
         # Renormalization, rescaling, and shifting
         return 2*g*np.sqrt(da/shots) -1
 
+
 # ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 # =================================== SQPAM ====================================
 # ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 class SQPAM():
     def __init__(self):
         pass
@@ -178,7 +159,7 @@ class SQPAM():
     def __repr__(self):
         return self.__class__.__name__
     
-    def t_x(self, qa, t, l, Print=False) -> None:
+    def t_x(self, qa: 'QuantumCircuit', t: int, l: 'QuantumRegister', Print: bool = False) -> None:
         """ Auxilary function for matching control conditions with time indexes.
         
         Applies X gates on qubits of the time register whenever the respective 
@@ -214,7 +195,7 @@ class SQPAM():
                 print(i, end='')
             print('>',end='')
     
-    def r2th_x(self, qa, t, a, l, q, Print=False) -> None:
+    def r2th_x(self, qa: 'QuantumCircuit', t: int, a: float, l: 'QuantumRegister', q: 'QuantumRegister', Print: bool = False) -> None:
         """ SQPAM Value-Setting operation.
 
         Applies a controlled Ry(2*theta) gate to the amplitude register, 
@@ -277,7 +258,7 @@ class SQPAM():
         """
         return np.arcsin(np.sqrt((originalAudio+1)/2))
     
-    def prepare(self, angles, size, regnames, Print=False):
+    def prepare(self, angles: npt.NDArray, size: Tuple[int, int], regnames: Tuple[str, str], Print: bool = False) -> 'QuantumCircuit':
         """Prepares an SQPAM quantum circuit.
 
         Creates a qiskit QuantumCircuit that prepares a Quantum Audio state 
@@ -331,7 +312,7 @@ class SQPAM():
             print()  
         return sq_pam
     
-    def measure(self, qc, treg_pos=1, areg_pos=0) -> None:
+    def measure(self, qc: 'QuantumCircuit', treg_pos: int = 1, areg_pos: int = 0) -> None:
         """Appends Measurements to an SQPAM audio circuit
         
         From a quantum circuit with registers containing an SQPAM 
@@ -358,7 +339,7 @@ class SQPAM():
         qc.measure(t, ct)
         qc.measure(c, ca)
         
-    def reconstruct(self, lsize, counts, shots, inverted=False, both=False):
+    def reconstruct(self, lsize: int, counts: 'Counts', shots: int, inverted: bool = False, both: bool = False) -> npt.NDArray:
         """Builds a digital Audio from qiskit histogram data.
 
         Considering the SQPAM encoding scheme, it uses the histogram data stored 
@@ -411,13 +392,10 @@ class SQPAM():
             return 2*(sa/(ca+sa))-1
         
 
-
-
-
-
 # ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 # ==================================== QSM =====================================
 # ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 class QSM():
     def __init__(self):
         pass
@@ -425,7 +403,7 @@ class QSM():
     def __repr__(self):
         return self.__class__.__name__
     
-    def t_x(self, qc, t, l, Print=False):
+    def t_x(self, qc: 'QuantumCircuit', t: int, l: 'QuantumRegister', Print: bool = False) -> None:
         """ Auxilary function for matching control conditions with time indexes.
         
         Applies X gates on qubits of the time register whenever the respective 
@@ -461,7 +439,7 @@ class QSM():
                 print(i, end='')
             print('>',end='')
         
-    def omega_t(self, qa, t, a, l, q, Print=False) -> None:
+    def omega_t(self, qa: 'QuantumCircuit', t: int, a: int, l: 'QuantumRegister', q: 'QuantumRegister', Print: bool = False) -> None:
         """QSM Value-Setting operation.     
         
         Applies a multi-controlled CNOT gate to qubits of amplitude register, 
@@ -507,7 +485,7 @@ class QSM():
         """
         return originalAudio
         
-    def prepare(self, quantized_audio, size, regnames, Print=False) -> 'QuantumCircuit':
+    def prepare(self, quantized_audio: npt.NDArray, size: Tuple[int, int], regnames: Tuple[str, str], Print: bool = False) -> 'QuantumCircuit':
         """Prepares a QSM quantum circuit.
 
         Creates a qiskit QuantumCircuit that prepares a Quantum Audio state 
@@ -554,7 +532,7 @@ class QSM():
             print()  
         return qsm
     
-    def measure(self, qc, treg_pos=1, areg_pos=0) -> None:
+    def measure(self, qc: 'QuantumCircuit', treg_pos: int = 1, areg_pos: int = 0) -> None:
         """Appends Measurements to a QSM audio circuit
         
         From a quantum circuit with registers containing a QSM 
@@ -580,7 +558,7 @@ class QSM():
         qc.measure(t, ct)
         qc.measure(a, ca)
         
-    def reconstruct(self, lsize, counts) -> npt.NDArray:
+    def reconstruct(self, lsize: int, counts: 'Counts') -> npt.NDArray:
         """Builds a digital Audio from qiskit histogram data.
 
         Considering the QSM encoding scheme, it uses the histogram data stored 
@@ -612,13 +590,35 @@ class QSM():
         return da
 
 
+# //////////////////////////////////////////////////////////////////////////////
+# ============================ Encoder Selector ================================
+# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+AnyEncoder = TypeVar('AnyEncoder', QPAM, SQPAM, QSM)
+
+class EncodingScheme():
+    def __init__(self):
+        self._qa_encoders = {
+            "qpam": QPAM, 
+            "sqpam": SQPAM,
+            "qsm": QSM,
+        }
+    def get_encoder(self, encoder_name: str) -> AnyEncoder:
+        """Returns: encoder class associated with name.
+        """
+        encoder = self._qa_encoders.get(encoder_name)
+        if not encoder:
+            raise ValueError(f'"{encoder_name}" is not a valid name. Valid representations are: {list(self._qa_encoders.keys())}')
+        return encoder    
+
 
 # \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
 # =========================== Quantum Audio Class ==============================
 # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+
 class QuantumAudio():
     
-    def __init__(self, encoder_name):
+    def __init__(self, encoder_name: str):
         
         #Loads the methods from the specified representation
         self.encoder = EncodingScheme().get_encoder(encoder_name)
@@ -637,7 +637,6 @@ class QuantumAudio():
         self.job = None
         self.result = None
         self.counts = {}
-        
         
     def __repr__(self):
         return self.__class__.__name__
@@ -697,7 +696,6 @@ class QuantumAudio():
         print(f"For this input, the {self.encoder.__name__} representation will require:\n         {self.lsize} qubits for encoding time information and \n         {self.qsize} qubits for encoding ampĺitude information.")
         return self
         
-    
     def _convert(self) -> 'QuantumAudio':
         """Pre-processing step for circuit preparation.
         
@@ -710,7 +708,7 @@ class QuantumAudio():
         self.converted_input = self.encoder.convert(self, self.input)
         return self
     
-    def prepare(self, tregname='t', aregname='a', Print=False) -> 'QuantumAudio':
+    def prepare(self, tregname: str = 't', aregname: str = 'a', Print: bool = False) -> 'QuantumAudio':
         """Creates a Quantum Circuit that prepares the audio representation.
         
         Loads the 'circuit' attribute with the preparation circuit, according
@@ -724,7 +722,7 @@ class QuantumAudio():
         self.circuit = self.encoder.prepare(self.encoder, self.converted_input, (self.lsize, self.qsize), (tregname, aregname), Print)
         return self
     
-    def measure(self, treg_pos=None, areg_pos=None) -> 'QuantumAudio':
+    def measure(self, treg_pos: Optional[int] = None, areg_pos: Optional[int] = None) -> 'QuantumAudio':
         """Updates quantum circuit by adding measurements in the end.
 
         Will add a measurement instruction to the end of each qubit register.
@@ -741,7 +739,7 @@ class QuantumAudio():
         self.encoder.measure(self, self.circuit, *additional_args)
         return self
             
-    def run(self, shots=10, backend_name='qasm_simulator', provider=Aer) -> 'QuantumAudio':        
+    def run(self, shots: int = 10, backend_name: str = 'qasm_simulator', provider=Aer) -> 'QuantumAudio':        
         """ Runs the Quantum Circuit in an IBMQ job.
 
         Transpiles and runs QuantumAudio.circuit in a qiskit job. Supports IBMQ
@@ -767,7 +765,7 @@ class QuantumAudio():
         self.counts = job.result().get_counts()
         return self
     
-    def reconstruct_audio(self, **additional_kwargs) -> 'QuantumAudio':
+    def reconstruct_audio(self, **additional_kwargs: Any) -> 'QuantumAudio':
         """Builds an audio signal from a qiskit result histogram.
 
         Depending on the chosen encoding technique, reconstructs an audio file
@@ -782,7 +780,7 @@ class QuantumAudio():
         if self.encoder_name == 'qpam' or self.encoder_name == 'sqpam':
             additional_args += [self.shots]        
 
-        self.output = self.encoder.reconstruct(self, self.lsize, self.counts,                                                *additional_args, **additional_kwargs)
+        self.output = self.encoder.reconstruct(self, self.lsize, self.counts, *additional_args, **additional_kwargs)
         return self
         
     def plot_audio(self) -> None:
@@ -804,13 +802,11 @@ class QuantumAudio():
 #         plt.axis('off')
         plt.title('output')
         plt.show()
-        
     
-    def listen(self, rate=44100) -> None:
+    def listen(self, rate: int = 44100) -> None:
         """Plays the audio file using ipython.display.Audio()
         """
         display(Audio(self.output, rate=rate))
-
 
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
