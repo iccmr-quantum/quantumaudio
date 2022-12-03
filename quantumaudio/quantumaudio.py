@@ -18,7 +18,7 @@ from bitstring import BitArray
 #from abc import ABC, abstractmethod
 from IPython.display import display, Audio
 import matplotlib.pyplot as plt
-
+import warnings
 
 
 
@@ -41,6 +41,9 @@ class EncodingScheme():
 
 
 
+# ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+# =================================== QPAM =====================================
+# ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 class QPAM():
     def __init__(self):
         self.norm = 1.
@@ -82,13 +85,12 @@ class QPAM():
         Args:
             digital_amplitudes: Array with propbability amplitudes
             size: The size of both qubit registers in a tuple (lsize, qsize). 
-                'lsize' qubits for . Similarly,
-                'q' encodes amplitude information in 'qsize' qubits. 
-                
-                (Tuple(int,int)) time (lsize) and amplitude (qsize) register sizes, respectively
-                    Note: for QPAM, qsize is ALWAYS 0
-        
-        -Print -> (bool) Toggles a simple print of the prepared quantum state
+                'lsize' qubits for 'l'; 'qsize' qubits for 'q'. 
+                For QPAM, 'qsize' is ALWAYS 0
+            regnames: Label names for 'l' and 'q', passed as a tuple. For 
+                visualization purposes only.
+            Print: Toggles a simple print of the prepared quantum state to the
+                console, for visualization purposes only.
 
         Returns: 
             A qiskit QuantumCircuit with specific QPAM preparation instructions.
@@ -115,12 +117,18 @@ class QPAM():
                     print()
         return qpam
     
-    def measure(self, qc, treg_pos=0):
-        '''Appends Measurements to a QPAM audio circuit
-        -qc -> (qiskit QuantumCircuit)
-        -treg_pos -> (int) Position of the time register (qa.qregs method)
-        '''
-#         print('QPAM Measure')
+    def measure(self, qc, treg_pos=0) -> None:
+        """Appends Measurements to a QPAM audio circuit
+        
+        From a quantum circuit with a register containing a QPAM 
+        representation of quantum audio, creates a classical register with 
+        compatible size and adds isntructions for measuring the QPAM register.
+
+        Args:
+            qc: A qiskit quantum circuit containing at least 1 quantum register.
+            treg_pos: Index of the QPAM ('l') register in the circuit. 
+                Default is 0
+        """
         # Accesses the QuantumRegister containing the time information
         t = qc.qregs[treg_pos]
         
@@ -128,18 +136,25 @@ class QPAM():
         qc.add_register(ct)
         qc.measure(t, ct)
         
-    def reconstruct(self, lsize, counts, shots, g=None):
-        '''Builds a digital Audio from qiskit histogram data, 
-        considering the QPAM encoding scheme
+    def reconstruct(self, lsize, counts, shots, g=None) -> npt.NDArray:
+        """Builds a digital Audio from qiskit histogram data.
+
+        Considering the QPAM encoding scheme, it uses the histogram data stored 
+        in a Counts object (qiskit.result.counts.Counts) to reconstruct an audio
+        signal. It renormalizes the histogram counts and remaps the signal back 
+        to the [-1 to 1] range.
         
-        -lsize -> (int) size of the time register
-        -counts -> (qiskit Counts) (result.get_counts())
-        -shots -> (int) Amount of measurements of the qiskit job
-        -g -> (float) Gain factor (usually proportional to the original audio's norm)
+        Args:
+            lsize: Size of the 'l' (time) register.
+            counts: Histogram from a qiskit job result (result.get_counts())
+            shots: Amount of identical experiments ran by the qiskit job.
+            g: Gain factor. This is a renormalization factor.
+                (When bypassing audio signals through quantum circuits, this
+                factor is usually proportional to the origal audio's norm).
 
         Returns:
-            A Digital Audio as a Numpy Array
-        '''
+            A Digital Audio as a Numpy Array. The signal is in float format.
+        """
         g=self.norm if g is None else g
         
 #         print('QPAM Reconstruct')
@@ -152,11 +167,10 @@ class QPAM():
 
         # Renormalization, rescaling, and shifting
         return 2*g*np.sqrt(da/shots) -1
-        
 
-
-
-
+# ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+# =================================== SQPAM ====================================
+# ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 class SQPAM():
     def __init__(self):
         pass
@@ -164,20 +178,29 @@ class SQPAM():
     def __repr__(self):
         return self.__class__.__name__
     
-    def t_x(self, qa, t, l, Print=False):
-        '''Applies an X gate on the time register, 
-        whenever the respective bit of a given time index is 0
-        -qa -> (qiskit QuamtumCircuit)
-        -t -> (int) Time index
-        -l -> (qiskit QuantumRegister) Time register
-        -Print -> (bool)
+    def t_x(self, qa, t, l, Print=False) -> None:
+        """ Auxilary function for matching control conditions with time indexes.
+        
+        Applies X gates on qubits of the time register whenever the respective 
+        bit of the current time index (in binary representation) is 0. As a 
+        result, the qubit will be flipped to |1> and succesfully trigger 
+        necessary control conditions of the circuit for this time index.
 
-        Example:
-        t_x(qa, 6, l)
-            (a time register 'l' with (let's say) 5 qubits in 'qa' at instant 6)
+        Args:
+            qa: The quantum circuit to be maniputated
+            t: Time index that will be converted to binary form for comparison.
+            l: Quantum register of the time indexes.
+            Print: Toggles a simple print of the prepared quantum state to the
+                console, for visualization purposes only. To be used together 
+                with all other SQPAM methods with a 'Print' kwarg.
 
-        t == 6 -> 00110 applies X gates to qubits 0, 3 and 4.
-        '''
+        Examples:
+            t_x(qa, 6, l)
+            (a time register 'l' with, say, 5 qubits in 'qa' at instant 6)
+
+            't' = 6 == '00110'. `t_x` applies X gates to qubits 0, 3 and 4
+                (right to left) of register 'l'.
+        """
         tstr=[]
         for i, l_qubit in enumerate(l):
             tBit = (t>>i)&1
@@ -191,24 +214,31 @@ class SQPAM():
                 print(i, end='')
             print('>',end='')
     
-    def r2th_x(self, qa, t, a, l, q, Print=False):
-        '''SQ-PAM Value-Setting operation.     
-        Applies a  controlled Ry(2*theta) gate
-        to the amplitude register, controlled by the 
-        time register if at the respective time index
-        state.
-        -qa -> (qiskit QuamtumCircuit)
-        -t -> (int) Time index
-        -a -> (float) Angle of rotation
-        -l -> (qiskit QuantumRegister) Time register
-        -q -> (qiskit QuantumRegister) Amplitude Register
-        -Print -> (bool)
-        '''
+    def r2th_x(self, qa, t, a, l, q, Print=False) -> None:
+        """ SQPAM Value-Setting operation.
+
+        Applies a controlled Ry(2*theta) gate to the amplitude register, 
+        controlled by the time register at the respective time index
+        state. In other words. At index 't', it rotates the aplitude qubit
+        by the angle mapped from the audio sample at the same index. 
+        In quantum computing terms, this translates to a multi-controlled
+        rotation gate.
+
+        Args:
+            qa: The quantum circuit to be manipulated.
+            t: Time index that will be encoded.
+            a: Angle of rotation.
+            l: Time register, 'l'.
+            q: Amplitude Register, 'q'.
+            Print: Toggles a simple print of the prepared quantum state to the
+                console, for visualization purposes only. To be used together 
+                with all other SQPAM methods with a 'Print' kwarg.
+        """
 
         # Applies the necessary X gates at index t
         self.t_x(self, qa, t, l)
 
-        # Creates a circuit with the respective multi-controlled-Ry gate
+        # Creates an auxiliary circuit for the respective multi-controlled gates
         mc_ry = QuantumCircuit()
         mc_ry.add_register(q)
         mc_ry.ry(2*a, 0)
@@ -222,31 +252,59 @@ class SQPAM():
         if Print:
             print('[cos(%.3f)|0> + sin(%.3f)|1>]' %(a,a),end='')       
 
-        # Applis the X gates again
+        # Applies the X gates again, 'resetting' the time register
         self.t_x(self, qa, t, l, Print)
     
-    def convert(self, original_audio):
-        '''Converts a digital Audio
-        into an array of angles between [0, pi/2]
+    def convert(self, originalAudio: npt.NDArray) -> npt.NDArray:
+        """Converts digital audio into an array of probability amplitudes.
 
-        -original_audio -> (numpy ndarray)  
+        The audio signal is mapped to an array of angles. The angles can then 
+        be interpreted as real-valued parameters for a trigonometric 
+        representation subspace of a qubit. In other words, the angles are used 
+        to rotate a qubit - originally in the |0> state - to the following 
+        state: ( cos(angle)|0> + sin(angle)|1> ). Notice that this preserves 
+        probabilities, as cos^2 + sin^2 = 1.
+
+        Note: By convention, we are using the `np.arcsin` function to calculate 
+        the angles. This means that the `SQPAM.reconstruct()` method will use 
+        the even (sine) bins of the histogram to retrieve the signal.
+
+        Args:
+            originalAudio: Numpy Array containing audio information.  
         
-        Returns: (numpy ndarray) 
-        '''
-        return np.arcsin(np.sqrt((original_audio+1)/2))
+        Returns: 
+            A Numpy Array containing angles between 0 and pi/2.
+        """
+        return np.arcsin(np.sqrt((originalAudio+1)/2))
     
     def prepare(self, angles, size, regnames, Print=False):
-        '''Creates a qiskit QuantumCircuit that prepares
-        a Quantum Audio State using
-        SQ-PAM (Single-Qubit Probability Ampolitude Modulation) Representation
+        """Prepares an SQPAM quantum circuit.
 
-        -angles -> (numpy ndarray) array of angles bettween [0, pi/2]
-        -size -> (Tuple(int,int)) time (lsize) and amplitude (qsize) register sizes, respectively
-            Note: for SQ-PAM, qsize is ALWAYS 1
-            
-        -Print -> (bool) Toggles a simple print of the prepared quantum state
+        Creates a qiskit QuantumCircuit that prepares a Quantum Audio state 
+        using SQPAM (Single-Qubit Probability Amplitude Modulation).
+        The quantum circuits used for audio representations typically contain 
+        two qubit registers, namely, 'l' (which encodes time/index information) 
+        and 'q' (which encodes amplitude information).
 
-        Returns: (qiskit QuantumCircuit)'''
+        Note: In SQPAM (as hinted by its name), the 'q' (amplitude) register 
+        contains a single qubit. The audio samples are mapped into angles that
+        parametrize single qubit rotations of 'q' - which are then correlated 
+        to index states of the 'l' register. 
+        
+        Args:
+            angles: Array with propbability amplitudes
+            size: The size of both qubit registers in a tuple (lsize, qsize). 
+                'lsize' qubits for 'l'; 'qsize' qubits for 'q'. 
+                For SQPAM, 'qsize' is ALWAYS 1
+            regnames: Label names for 'l' and 'q', passed as a tuple. For 
+                visualization purposes only.
+            Print: Toggles a simple print of the prepared quantum state to the
+                console, for visualization purposes only.
+
+        Returns: 
+            A qiskit quantum circuit containing specific SQPAM preparation
+            instructions.
+        """
         
         # QPAM has a single-qubit amplitude register,
         # so 'qsize' is necessarily 1
@@ -273,12 +331,20 @@ class SQPAM():
             print()  
         return sq_pam
     
-    def measure(self, qc, treg_pos=1, areg_pos=0):
-        '''Appends Measurements to a SQ-PAM audio circuit
-        qa -> (qiskit QuantumCircuit)
-        treg_pos -> (int) Position of the time register (qa.qregs method)
-        areg_pos -> (int) Position of the amplitude coefficient register (qa.qregs method)
-        '''
+    def measure(self, qc, treg_pos=1, areg_pos=0) -> None:
+        """Appends Measurements to an SQPAM audio circuit
+        
+        From a quantum circuit with registers containing an SQPAM 
+        representation of quantum audio, creates two classical registers with 
+        compatible sizes and adds instructions for measuring them.
+
+        Args:
+            qc: A quantum circuit containing at least 2 quantum registers.
+            treg_pos: Index of the SQPAM ('l') register in the circuit. 
+                Default is 1
+            areg_pos: Index of the SQPAM ('q') register in the circuit. 
+                Default is 0
+        """
         # Creates classical registers for measurement
         t=qc.qregs[treg_pos]
         c=qc.qregs[areg_pos]
@@ -292,20 +358,35 @@ class SQPAM():
         qc.measure(t, ct)
         qc.measure(c, ca)
         
-    def reconstruct(self, lsize, counts, shots, both=False, inverted=False):
-        '''Builds a digital Audio from qiskit histogram data, 
-        considering the SQ-PAM encoding scheme
+    def reconstruct(self, lsize, counts, shots, inverted=False, both=False):
+        """Builds a digital Audio from qiskit histogram data.
 
-        -lsize -> (int) size of the time register
-        -counts -> (qiskit Counts) (result.get_counts())
-        -shots -> (int) Amount of measurements of the qiskit job
-        -both -> (bool) retrieve both Sine and Cosine amplitudes in a tuple
-        -inverted -> (bool) retrieves the cosine amplitude if true 
-        (which is the phase-inverted version of the SQ-PAM)
+        Considering the SQPAM encoding scheme, it uses the histogram data stored 
+        in a Counts object (qiskit.result.counts.Counts) to reconstruct an audio
+        signal. It separates the even bins (sine coefficients) from the odd 
+        bins (cosine coefficients) of the histogram. Since the `SQPAM.convert()`
+        method used the `np.arcsin()` function to prepare the state, the even 
+        bins should be used for reconstructing the signal.
+
+        However, the relations between sine and cosine means that a 
+        reconstruction with the cosine terms will build a perfectly inverted 
+        version of the signal. The user is able to choose between retrieving 
+        original or phase-inverted (or both) signals.
+        
+        Args:
+            lsize: Size of the 'l' (time) register, leading to the full
+                audio size.
+            counts: Histogram from a qiskit job result (result.get_counts())
+            shots: Amount of identical experiments ran by the qiskit job.
+            inverted: Retrieves the cosine amplitudes instead (leading to a 
+                phase-inverted version of the signal).
+            both: Retrieves both Sine and Cosine amplitudes in a tuple. 
+                Overwrites the 'inverted' argument.
 
         Returns:
-            A Digital Audio as a Numpy Array
-        '''
+            A Digital Audio as a Numpy Array, or a Tuple with two signals. 
+            The signals are in float format.
+        """
         
         N = 2**lsize
         
@@ -334,6 +415,9 @@ class SQPAM():
 
 
 
+# ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+# ==================================== QSM =====================================
+# ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 class QSM():
     def __init__(self):
         pass
@@ -342,19 +426,28 @@ class QSM():
         return self.__class__.__name__
     
     def t_x(self, qc, t, l, Print=False):
-        '''Applies an X gate on the time register, 
-        whenever the respective bit of a given time index is 0
-        -qa -> (qiskit QuamtumCircuit)
-        -t -> (int) Time index
-        -l -> (qiskit QuantumRegister) Time register
-        -Print -> (bool)
+        """ Auxilary function for matching control conditions with time indexes.
+        
+        Applies X gates on qubits of the time register whenever the respective 
+        bit of the current time index (in binary representation) is 0. As a 
+        result, the qubit will be flipped to |1> and succesfully trigger 
+        necessary control conditions of the circuit for this time index.
 
-        Example:
-        t_x(qa, 6, l)
-            (a time register 'l' with (let's say) 5 qubits in 'qa' at instant 6)
+        Args:
+            qa: The quantum circuit to be maniputated
+            t: Time index that will be converted to binary form for comparison.
+            l: Quantum register of the time indexes.
+            Print: Toggles a simple print of the prepared quantum state to the
+                console, for visualization purposes only. To be used together 
+                with all other QSM methods with a 'Print' kwarg.
 
-        t == 6 -> 00110 applies X gates to qubits 0, 3 and 4.
-        '''
+        Examples:
+            t_x(qa, 6, l)
+            (a time register 'l' with, say, 5 qubits in 'qa' at instant 6)
+
+            't' = 6 == '00110'. `t_x` applies X gates to qubits 0, 3 and 4
+                (right to left) of register 'l'.
+        """
         tstr=[]
         for i, l_qubit in enumerate(l):
             tBit = (t>>i)&1
@@ -368,21 +461,26 @@ class QSM():
                 print(i, end='')
             print('>',end='')
         
-    def omega_t(self, qa, t, a, l, q, Print=False):
-        '''QSM Value-Setting operation.     
-        Applies a multi-controlled Not gate
-        to the amplitude register, using the 
-        a respective time index state as control.
-
-        -qa -> (qiskit QuamtumCircuit)
-        -t -> (int) Time index
-        -a -> (int) Quantized audio amplitude
-        -l -> (qiskit QuantumRegister) Time register
-        -q -> (qiskit QuantumRegister) Amplitude Register
-        -Print -> (bool)
-        '''
+    def omega_t(self, qa, t, a, l, q, Print=False) -> None:
+        """QSM Value-Setting operation.     
         
-        # Applies the necessary not gates at index t
+        Applies a multi-controlled CNOT gate to qubits of amplitude register, 
+        controlled by the time register at the respective time index
+        state. In other words. At index 't', it flipps the amplitude qubits
+        to match the original audio sample bits at the same index. 
+
+        Args:
+            qa: The quantum circuit to be manipulated.
+            t: Time index that will be encoded.
+            a: Quantized sample from original audio to be converted to binary.
+            l: Time register, 'l'.
+            q: Amplitude Register, 'q'.
+            Print: Toggles a simple print of the prepared quantum state to the
+                console, for visualization purposes only. To be used together 
+                with all other SQPAM methods with a 'Print' kwarg.
+        """ 
+        
+        # Applies the necessary NOT gates at index t
         self.t_x(self, qa, t, l)
         astr=[]
         # Flips a qubit everytime aBit==1
@@ -401,22 +499,37 @@ class QSM():
 
         self.t_x(self, qa, t, l, Print)
         
-    def convert(self, original_audio):
-        '''for the QSM encoding scheme, this function is dummy.'''
-        return original_audio
+    def convert(self, originalAudio):
+        """ For the QSM encoding scheme, this function is dummy.
         
-    def prepare(self, digital_audio, size, regnames, Print=False):
-        '''Creates a qiskit QuantumCircuit that prepares
-        a Quantum Audio State using
-        QSM (Quantum State Modulation) Representation
+        QSM expects a quantized signal (N-Bit PCM) as input. 
+        No pre-processing is needed after this point.
+        """
+        return originalAudio
+        
+    def prepare(self, quantized_audio, size, regnames, Print=False) -> 'QuantumCircuit':
+        """Prepares a QSM quantum circuit.
 
-        -digital_audio -> (numpy ndarray) quantized digital audio
-        -size -> (Tuple(int,int)) time (lsize) and amplitude (qsize) register sizes, respectively
-        -Print -> (bool) Toggles a simple print of the prepared quantum state
+        Creates a qiskit QuantumCircuit that prepares a Quantum Audio state 
+        using QSM (Quantum State Modulation).
+        The quantum circuits used for audio representations typically contain 
+        two qubit registers, namely, 'l' (which encodes time/index information) 
+        and 'q' (which encodes amplitude information).
 
+        Args:
+            quantized_audio: Integer Array with the input signal.
+            size: The size of both qubit registers in a tuple (lsize, qsize). 
+                'lsize' qubits for 'l'; 'qsize' qubits for 'q'. 
+            regnames: Label names for 'l' and 'q', passed as a tuple. For 
+                visualization purposes only.
+            Print: Toggles a simple print of the prepared quantum state to the
+                console, for visualization purposes only.
 
-        Returns: (qiskit QuantumCircuit)
-        '''
+        Returns: 
+            A qiskit quantum circuit containing specific QSM preparation
+            instructions.
+        """
+
         lsize=size[0]
         qsize=size[1]
         # Time register
@@ -433,20 +546,29 @@ class QSM():
         qsm.h(l)
 
         # Value setting operations
-        for i, sample in enumerate(digital_audio):        
+        for i, sample in enumerate(quantized_audio):        
             self.omega_t(self, qsm, i, sample, l, q, Print)
-            if Print and i!=len(digital_audio)-1:
+            if Print and i!=len(quantized_audio)-1:
                 print(' + ', end='')
         if Print:
             print()  
         return qsm
     
-    def measure(self, qc, treg_pos=1, areg_pos=0):
-        '''Appends Measurements to a QSM audio circuit
-        -qa -> (qiskit QuantumCircuit)
-        -treg -> (int) Position of the time register (qa.qregs method)
-        -areg -> (int) Position of the amplitude register (qa.qregs method)
-        '''
+    def measure(self, qc, treg_pos=1, areg_pos=0) -> None:
+        """Appends Measurements to a QSM audio circuit
+        
+        From a quantum circuit with registers containing a QSM 
+        representation of quantum audio, creates two classical registers with 
+        compatible sizes and adds instructions for measuring them.
+
+        Args:
+            qc: A quantum circuit containing at least 2 quantum registers.
+            treg_pos: Index of the SQPAM ('l') register in the circuit. 
+                Default is 1
+            areg_pos: Index of the SQPAM ('q') register in the circuit. 
+                Default is 0
+        """
+
         t=qc.qregs[treg_pos]
         a=qc.qregs[areg_pos]
        
@@ -458,16 +580,23 @@ class QSM():
         qc.measure(t, ct)
         qc.measure(a, ca)
         
-    def reconstruct(self, lsize, counts):
-        '''Builds a digital Audio from qiskit histogram data, 
-        considering the QSM encoding scheme
+    def reconstruct(self, lsize, counts) -> npt.NDArray:
+        """Builds a digital Audio from qiskit histogram data.
 
-        -lsize -> (int) size of the time register
-        -counts -> (qiskit Counts) (result.get_counts())
+        Considering the QSM encoding scheme, it uses the histogram data stored 
+        in a Counts object (qiskit.result.counts.Counts) to reconstruct an audio
+        signal. It uses the bin labels of the histogram, which contains the
+        measured quantum states in binary form. It converts the binary pairs to 
+        (amplitude, index) pairs, building an Array.
+        
+        Args:
+            lsize: Size of the 'l' (time) register.
+            counts: Histogram from a qiskit job result (result.get_counts())
 
-        Returns: 
-            A Digital Audio as a Numpy Array
-        '''
+        Returns:
+            A Digital Audio as a Numpy Array. The signal is in 
+            quantized (int) format.
+        """
     
         N = 2**lsize
         da = np.zeros(N, int)
@@ -484,8 +613,9 @@ class QSM():
 
 
 
-
-
+# \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
+# =========================== Quantum Audio Class ==============================
+# /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 class QuantumAudio():
     
     def __init__(self, encoder_name):
@@ -683,8 +813,9 @@ class QuantumAudio():
 
 
 
-
-
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# =========================== Utilitary Functions ==============================
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 def requantize_input(audio: npt.NDArray, bit_depth: int) -> npt.NDArray:
     """Requantizes Array signals and PCM audio signals.
 
@@ -704,9 +835,3 @@ def requantize_input(audio: npt.NDArray, bit_depth: int) -> npt.NDArray:
     audio_quantized = audio_quantized_norm*2-1
 
     return audio_quantized
-    
-
-
-
-
-

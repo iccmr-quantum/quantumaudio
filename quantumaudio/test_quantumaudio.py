@@ -156,3 +156,7 @@ def test_print_qsm(qsm_loaded, capfd):
     qsm_loaded.prepare(Print=True)
     out, err = capfd.readouterr()
     assert out == '|000>(x)|000> + |111>(x)|001> + |010>(x)|010> + |011>(x)|011> + |101>(x)|100> + |100>(x)|101> + |001>(x)|110> + |000>(x)|111>\n'
+
+def test_QPAM_prepare_warning(qpam_loaded):
+    #qpam_loaded.prepare(size=(3, 3))
+    pass
