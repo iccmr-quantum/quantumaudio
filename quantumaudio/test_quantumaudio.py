@@ -1,5 +1,6 @@
 from quantumaudio import QuantumAudio, QPAM, SQPAM, QSM
-from qiskit.result.counts import Counts
+from qiskit.result.counts import Counts # type: ignore
+#from qiskit.result.counts import Counts
 import pytest
 import numpy as np
 import sys
@@ -43,7 +44,7 @@ def input_audio():
 
 @pytest.fixture
 def quantized_input_audio():
-    return np.array([0., -1., 2., 3., -3., -4., 1.])
+    return np.array([0, -1, 2, 3, -3, -4, 1])
 
 
 def test_load_input(qpam, sqpam, qsm, input_audio):
@@ -87,9 +88,9 @@ def qsm_loaded(qsm, quantized_input_audio):
 
 def test_convert(qpam_loaded):
     inp = qpam_loaded.input
-    qpam_loaded.convert()
+    qpam_loaded._convert()
     assert qpam_loaded.converted_input.tolist() != None
-    assert qpam_loaded.converted_input.tolist() == (((inp+1)/2)/np.linalg.norm((inp+1)/2)).tolist() 
+    assert qpam_loaded.converted_input.tolist() == (((inp+1)/2)/np.linalg.norm((inp+1)/2)).tolist()
 
 def test_prepare(qpam_loaded):
     qpam_loaded.prepare()
@@ -104,21 +105,21 @@ def test_circuit_workflow_qsm(qsm_loaded):
     qsm_loaded.prepare().measure().run(1)
 
 def test_reconstruction_qpam(qpam_loaded):
-    qpam_loaded.convert()
+    qpam_loaded._convert()
     qpam_loaded.shots = 1000
-    qpam_loaded.counts = Counts({'100': 5, '001': 60, '110': 174, '111': 106, '011': 313, '000': 116, '010': 226}) 
+    qpam_loaded.counts = Counts({'100': 5, '001': 60, '110': 174, '111': 106, '011': 313, '000': 116, '010': 226})
     qpam_loaded.reconstruct_audio()
     assert np.sum((qpam_loaded.output - qpam_loaded.input)**2) < 0.05
 
 def test_reconstruction_sqpam(sqpam_loaded):
     sqpam_loaded.shots = 1000
-    sqpam_loaded.counts = Counts({'110 0': 50, '011 1': 114, '001 1': 51, '011 0': 8, '100 0': 106, '001 0': 76, '000 0': 57, '101 0': 114, '111 0': 67, '100 1': 13, '010 1': 100, '010 0': 44, '000 1': 58, '111 1': 60, '110 1': 82}) 
+    sqpam_loaded.counts = Counts({'110 0': 50, '011 1': 114, '001 1': 51, '011 0': 8, '100 0': 106, '001 0': 76, '000 0': 57, '101 0': 114, '111 0': 67, '100 1': 13, '010 1': 100, '010 0': 44, '000 1': 58, '111 1': 60, '110 1': 82})
     sqpam_loaded.reconstruct_audio()
     assert np.sum((sqpam_loaded.output - sqpam_loaded.input)**2) < 0.1
 
 def test_reconstruction_qsm(qsm_loaded):
     qsm_loaded.shots = 1000
-    qsm_loaded.counts = Counts({'101 100': 122, '111 000': 125, '011 011': 125, '110 001': 134, '010 010': 132, '001 111': 110, '100 101': 132, '000 000': 120}) 
+    qsm_loaded.counts = Counts({'101 100': 122, '111 000': 125, '011 011': 125, '110 001': 134, '010 010': 132, '001 111': 110, '100 101': 132, '000 000': 120})
     qsm_loaded.reconstruct_audio()
     assert np.sum((qsm_loaded.output - qsm_loaded.input)) == 0
 

@@ -8,6 +8,7 @@
 
 
 import numpy as np
+import numpy.typing as npt
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, Aer, execute
 from qiskit.result import Counts
 from qiskit.tools import job_monitor
@@ -28,7 +29,9 @@ class EncodingScheme():
             "sqpam": SQPAM,
             "qsm": QSM,
         }
-    def get_encoder(self, encoder_name):
+    def get_encoder(self, encoder_name: str):
+        """Returns: encoder class associated with name.
+        """
         encoder = self._qa_encoders.get(encoder_name)
         if not encoder:
             raise ValueError(f'"{encoder_name}" is not a valid name. Valid representations are: {list(self._qa_encoders.keys())}')
@@ -40,20 +43,19 @@ class EncodingScheme():
 
 class QPAM():
     def __init__(self):
-        
         self.norm = 1.
         
     def __repr__(self):
         return self.__class__.__name__
     
-    def convert(self, original_audio):
-        '''Converts a digital Audio
-        into an array of probability amplitudes
+    def convert(self, original_audio: npt.NDArray) -> npt.NDArray:
+        """Converts the digital Audio into an array of probability amplitudes.
 
         -original_audio: (numpy ndarray);  
         
-        Returns: (numpy ndarray)
-        '''
+        Returns: 
+            A Numpy Array containing normalized probability amplitudes.
+        """
 #         print('QPAM Convert')
         # Changes the amplitude range from [-1, 1] to [0, 1]
         prepared = (original_audio.copy()+1)/2
@@ -62,9 +64,10 @@ class QPAM():
         
     
     def prepare(self, digital_amplitudes, size, regnames, Print=False):
-        '''Creates a qiskit QuantumCircuit that prepares
-        a Quantum Audio state using QPAM 
-        (Quantum Probability Amplitude Modulation) Representation
+        """Prepares a QPAM quantum circuit.
+
+        Creates a qiskit QuantumCircuit that prepares a Quantum Audio state 
+        using QPAM (Quantum Probability Amplitude Modulation) representation.
 
         -digital_amplitudes -> (numpy ndarray) Propbability Amplitudes
         -size -> (Tuple(int,int)) time (lsize) and amplitude (qsize) register sizes, respectively
@@ -72,7 +75,9 @@ class QPAM():
         
         -Print -> (bool) Toggles a simple print of the prepared quantum state
 
-        Returns: (qiskit QuantumCircuit)'''
+        Returns: 
+            A qiskit QuantumCircuit with specific QPAM preparation instructions.
+        """
 #         print('QPAM Prepare')
         
         # QPAM only needs the time register's size .
@@ -117,7 +122,9 @@ class QPAM():
         -shots -> (int) Amount of measurements of the qiskit job
         -g -> (float) Gain factor (usually proportional to the original audio's norm)
 
-        Returns: (numpy ndarray) a Digital Audio'''
+        Returns:
+            A Digital Audio as a Numpy Array
+        '''
         g=self.norm if g is None else g
         
 #         print('QPAM Reconstruct')
@@ -281,7 +288,8 @@ class SQPAM():
         -inverted -> (bool) retrieves the cosine amplitude if true 
         (which is the phase-inverted version of the SQ-PAM)
 
-        Returns: (numpy ndarray) a Digital Audio
+        Returns:
+            A Digital Audio as a Numpy Array
         '''
         
         N = 2**lsize
@@ -442,7 +450,8 @@ class QSM():
         -lsize -> (int) size of the time register
         -counts -> (qiskit Counts) (result.get_counts())
 
-        Returns: (numpy ndarray) a Digital Audio
+        Returns: 
+            A Digital Audio as a Numpy Array
         '''
     
         N = 2**lsize
@@ -488,8 +497,39 @@ class QuantumAudio():
     def __repr__(self):
         return self.__class__.__name__
     
-    def load_input(self, inputAudio, qsize=1):
-        self.lsize=1
+    def load_input(self, inputAudio: npt.NDArray[np.floating], bitDepth: int = 1) -> 'QuantumAudio':
+        """Loads an audio file and calculates the qubit requirements.
+
+        Brings a digital audio signal inside the class for further processing.
+        Audio files should be in numpy.ndarray type and be in the (-1. to 1.)
+        amplitude range. You can also optionally load a quantized audio signal 
+        as input (-N to N-1) range, as long as you specify the bit depth of your
+        quantized input 'qsize'
+
+        Args:
+            inputAudio: The audio signal to be converted. If not in 32-bit or 
+                64-bit float format ('n'-bit integer PCM), specify bit depth.
+            bitDepth: Audio bit depth IF using integer PCM. Ignore otherwise.
+
+        Returns:
+            Returns itself for using multiple QuantumAudio methods in one line
+            of code.
+
+        Examples:
+            >>> floatAudio = [0., -0.25, 0.5 , 0.75,  -0.75  ,  -1.,  0.25]
+            >>> qAudio = qa.QuantumAudio('qpam').load_input(floatAudio)
+            For this input, the QPAM representation will require:
+                    3 qubits for encoding time information and 
+                    0 qubits for encoding ampĺitude information.
+            
+            >>> Int3bitPCMAudio = [0, -1, 2, 3, -3, -4, 1]
+            >>> qAudio = qa.QuantumAudio('qsm').load_input(3bitIntPCMAudio, 3)
+            For this input, the QSM representation will require:
+                    3 qubits for encoding time information and 
+                    3 qubits for encoding ampĺitude information.
+        """
+
+        self.lsize = 1
         if len(inputAudio)>1:
             self.lsize = int(np.ceil(np.log2(len(inputAudio))))
         
@@ -498,32 +538,56 @@ class QuantumAudio():
         elif self.encoder_name == 'sqpam':
             self.qsize = 1
         else:
-            self.qsize = qsize       
+            self.qsize = bitDepth       
 
-        #Zero Padding
+        # Zero Padding
         zp = np.zeros(2**self.lsize - len(inputAudio))
         self.input = np.concatenate((inputAudio, zp))
         
         if self.encoder_name =='qsm':
             self.input = self.input.astype(int)
         else:
-            self.input = self.input.astype(float)/float(2**(qsize-1))
+            self.input = self.input.astype(float)/float(2**(bitDepth-1))
         
-        print("For this input, the {} representation will require:\n         {} qubits for encoding time information and \n         {} qubits for encoding ampĺitude information.".format(self.encoder.__name__, self.lsize, self.qsize))
+        print(f"For this input, the {self.encoder.__name__} representation will require:\n         {self.lsize} qubits for encoding time information and \n         {self.qsize} qubits for encoding ampĺitude information.")
         return self
         
     
-    def convert(self):
+    def _convert(self) -> 'QuantumAudio':
+        """Pre-processing step for circuit preparation.
+        
+        Depends on the encoder. Loads the 'converted_input' attribute.
+
+        Returns:
+            Returns itself for using multiple QuantumAudio methods in one line
+            of code.
+        """
         self.converted_input = self.encoder.convert(self, self.input)
         return self
     
-    def prepare(self, tregname='t', aregname='a', Print=False):
-        self.convert()
+    def prepare(self, tregname='t', aregname='a', Print=False) -> 'QuantumAudio':
+        """Creates a Quantum Circuit that prepares the audio representation.
+        
+        Loads the 'circuit' attribute with the preparation circuit, according
+        to the encoding technique used: QPAM, SQPAM or QSM.
+
+        Returns:
+            Returns itself for using multiple QuantumAudio methods in one line
+            of code.
+        """
+        self._convert()
         self.circuit = self.encoder.prepare(self.encoder, self.converted_input, (self.lsize, self.qsize), (tregname, aregname), Print)
         return self
     
-    def measure(self, treg_pos=None, areg_pos=None):
-        
+    def measure(self, treg_pos=None, areg_pos=None) -> 'QuantumAudio':
+        """Updates quantum circuit by adding measurements in the end.
+
+        Will add a measurement instruction to the end of each qubit register.
+
+        Returns:
+            Returns itself for using multiple QuantumAudio methods in one line
+            of code.
+        """
         additional_args = []
         if treg_pos != None:
             additional_args += [treg_pos]
@@ -532,9 +596,16 @@ class QuantumAudio():
         self.encoder.measure(self, self.circuit, *additional_args)
         return self
             
-    def run(self, shots=10, backend_name='qasm_simulator', provider=Aer):        
-#         print('QuantumAudio run')
-        
+    def run(self, shots=10, backend_name='qasm_simulator', provider=Aer) -> 'QuantumAudio':        
+        """ Runs the Quantum Circuit in an IBMQ job.
+
+        Transpiles and runs QuantumAudio.circuit in a qiskit job. Supports IBMQ
+        remote backends.
+
+        Returns:
+            Returns itself for using multiple QuantumAudio methods in one line
+            of code.
+        """
         self.shots = shots
         backend = provider.get_backend(backend_name)
         
@@ -551,8 +622,16 @@ class QuantumAudio():
         self.counts = job.result().get_counts()
         return self
     
-    def reconstruct_audio(self, **additional_kwargs):
-        
+    def reconstruct_audio(self, **additional_kwargs) -> 'QuantumAudio':
+        """Builds an audio signal from a qiskit result histogram.
+
+        Depending on the chosen encoding technique, reconstructs an audio file
+        using the histogram in QuantumAudio.counts (qiskit.result.counts.Counts)
+
+        Returns:
+            Returns itself for using multiple QuantumAudio methods in one line
+            of code.
+        """
         additional_args = []
         
         if self.encoder_name == 'qpam' or self.encoder_name == 'sqpam':
@@ -561,8 +640,11 @@ class QuantumAudio():
         self.output = self.encoder.reconstruct(self, self.lsize, self.counts,                                                *additional_args, **additional_kwargs)
         return self
         
-    def plot_audio(self):
-        
+    def plot_audio(self) -> None:
+        """Plots comparisons between the input and output audio files.
+
+        Uses matplotlib.
+        """
         plt.figure(figsize=(20, 3))
         plt.plot(np.zeros(2**self.lsize), '-k', ms=0.1)
         plt.plot(self.input)
@@ -579,15 +661,24 @@ class QuantumAudio():
         plt.show()
         
     
-    def listen(self, rate=44100):
+    def listen(self, rate=44100) -> None:
+        """Plays the audio file using ipython.display.Audio()
+        """
         display(Audio(self.output, rate=rate))
 
 
 
 
 
-def requantize_input(audio, bit_depth):
-    
+def requantize_input(audio: npt.NDArray, bit_depth: int) -> npt.NDArray:
+    """Requantizes Array signals and PCM audio signals.
+
+    Utilitary Function for downsizing the bit depth of an audio file.
+    Very useful for using with the QSM encoder 'QuantumAudio('qsm')'.
+
+    Returns:
+        (Numpy Array) Requantized audio signal.
+    """
     Q = 2**bit_depth-1
     
     eps = 1e-16
