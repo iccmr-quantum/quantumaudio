@@ -739,7 +739,7 @@ class QuantumAudio():
         self.encoder.measure(self, self.circuit, *additional_args)
         return self
             
-    def run(self, shots: int = 10, backend_name: str = 'qasm_simulator', provider=Aer) -> 'QuantumAudio':        
+    def run(self, shots: int = 10, backend_name: str = 'aer_simulator', provider=Aer) -> 'QuantumAudio':        
         """ Runs the Quantum Circuit in an IBMQ job.
 
         Transpiles and runs QuantumAudio.circuit in a qiskit job. Supports IBMQ
@@ -752,14 +752,14 @@ class QuantumAudio():
         self.shots = shots
         backend = provider.get_backend(backend_name)
         
-        if backend_name != 'qasm_simulator':
+        if backend_name != 'aer_simulator':
             circuit = transpile(self.circuit, backend=backend, optimization_level=3)
             
         else:
             circuit = self.circuit
             
         job = execute(circuit, backend, shots=shots)
-        if backend_name != 'qasm_simulator':
+        if backend_name != 'aer_simulator':
             job_monitor(job)
         self.result = job.result()
         self.counts = job.result().get_counts()
