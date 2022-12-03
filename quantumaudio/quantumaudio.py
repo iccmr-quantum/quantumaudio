@@ -31,24 +31,24 @@ class QPAM():
     def __repr__(self):
         return self.__class__.__name__
     
-    def convert(self, originalAudio: npt.NDArray) -> npt.NDArray:
-        """Converts the digital Audio into an array of probability amplitudes.
+    def convert(self, original_audio: npt.NDArray) -> npt.NDArray:
+        """Converts the digital audio into an array of probability amplitudes.
 
         The audio signal is normalized. The normalized samples can then be
         interpreted as probability amplitudes. In other words, by squaring every
         sample, their total sum is now 1.
 
         Args:
-            originalAudio: Numpy Array containing audio information.  
+            original_audio: Numpy Array containing audio information.  
         
         Returns: 
             A Numpy Array containing normalized probability amplitudes.
         """
-        prepared = (originalAudio.copy()+1)/2
+        prepared = (original_audio.copy()+1)/2
         self.norm = np.linalg.norm(prepared)
         return prepared/self.norm
     
-    def prepare(self, digital_amplitudes: npt.NDArray, size: Tuple[int, int], regnames: Tuple[str, str], Print: bool = False) -> 'QuantumCircuit':
+    def prepare(self, digital_amplitudes: npt.NDArray, size: Tuple[int, int], regnames: Tuple[str, str], print_state: bool = False) -> 'QuantumCircuit':
         """Prepares a QPAM quantum circuit.
 
         Creates a qiskit QuantumCircuit that prepares a Quantum Audio state 
@@ -68,7 +68,7 @@ class QPAM():
                 For QPAM, 'qsize' is ALWAYS 0
             regnames: Label names for 'l' and 'q', passed as a tuple. For 
                 visualization purposes only.
-            Print: Toggles a simple print of the prepared quantum state to the
+            print_state: Toggles a simple print of the prepared quantum state to the
                 console, for visualization purposes only.
 
         Returns: 
@@ -87,7 +87,7 @@ class QPAM():
         # Value Setting Operation
         qpam.initialize(list(digital_amplitudes), l)
             
-        if Print:
+        if print_state:
             for i, amps in enumerate(digital_amplitudes):
                 print('%.3f|%d>' %(amps, i), end='')
                 if i<len(digital_amplitudes)-1:
@@ -159,7 +159,7 @@ class SQPAM():
     def __repr__(self):
         return self.__class__.__name__
     
-    def t_x(self, qa: 'QuantumCircuit', t: int, l: 'QuantumRegister', Print: bool = False) -> None:
+    def t_x(self, qa: 'QuantumCircuit', t: int, l: 'QuantumRegister', print_state: bool = False) -> None:
         """ Auxilary function for matching control conditions with time indexes.
         
         Applies X gates on qubits of the time register whenever the respective 
@@ -171,9 +171,9 @@ class SQPAM():
             qa: The quantum circuit to be maniputated
             t: Time index that will be converted to binary form for comparison.
             l: Quantum register of the time indexes.
-            Print: Toggles a simple print of the prepared quantum state to the
+            print_state: Toggles a simple print of the prepared quantum state to the
                 console, for visualization purposes only. To be used together 
-                with all other SQPAM methods with a 'Print' kwarg.
+                with all other SQPAM methods with a 'print_state' kwarg.
 
         Examples:
             t_x(qa, 6, l)
@@ -184,18 +184,18 @@ class SQPAM():
         """
         tstr=[]
         for i, l_qubit in enumerate(l):
-            tBit = (t>>i)&1
-            tstr.append(tBit)
-            if not tBit:
+            t_bit = (t>>i)&1
+            tstr.append(t_bit)
+            if not t_bit:
                 qa.x(l_qubit)
-        if Print:
+        if print_state:
             print('|',end='')
 
             for i in reversed(tstr):    
                 print(i, end='')
             print('>',end='')
     
-    def r2th_x(self, qa: 'QuantumCircuit', t: int, a: float, l: 'QuantumRegister', q: 'QuantumRegister', Print: bool = False) -> None:
+    def r2th_x(self, qa: 'QuantumCircuit', t: int, a: float, l: 'QuantumRegister', q: 'QuantumRegister', print_state: bool = False) -> None:
         """ SQPAM Value-Setting operation.
 
         Applies a controlled Ry(2*theta) gate to the amplitude register, 
@@ -211,9 +211,9 @@ class SQPAM():
             a: Angle of rotation.
             l: Time register, 'l'.
             q: Amplitude Register, 'q'.
-            Print: Toggles a simple print of the prepared quantum state to the
+            print_state: Toggles a simple print of the prepared quantum state to the
                 console, for visualization purposes only. To be used together 
-                with all other SQPAM methods with a 'Print' kwarg.
+                with all other SQPAM methods with a 'print_state' kwarg.
         """
 
         # Applies the necessary X gates at index t
@@ -230,13 +230,13 @@ class SQPAM():
         qa.append(mc_ry, [i for i in range(l.size+q.size-1, -1, -1)])
 
         # Prints the state
-        if Print:
+        if print_state:
             print('[cos(%.3f)|0> + sin(%.3f)|1>]' %(a,a),end='')       
 
         # Applies the X gates again, 'resetting' the time register
-        self.t_x(self, qa, t, l, Print)
+        self.t_x(self, qa, t, l, print_state)
     
-    def convert(self, originalAudio: npt.NDArray) -> npt.NDArray:
+    def convert(self, original_audio: npt.NDArray) -> npt.NDArray:
         """Converts digital audio into an array of probability amplitudes.
 
         The audio signal is mapped to an array of angles. The angles can then 
@@ -251,14 +251,14 @@ class SQPAM():
         the even (sine) bins of the histogram to retrieve the signal.
 
         Args:
-            originalAudio: Numpy Array containing audio information.  
+            original_audio: Numpy Array containing audio information.  
         
         Returns: 
             A Numpy Array containing angles between 0 and pi/2.
         """
-        return np.arcsin(np.sqrt((originalAudio+1)/2))
+        return np.arcsin(np.sqrt((original_audio+1)/2))
     
-    def prepare(self, angles: npt.NDArray, size: Tuple[int, int], regnames: Tuple[str, str], Print: bool = False) -> 'QuantumCircuit':
+    def prepare(self, angles: npt.NDArray, size: Tuple[int, int], regnames: Tuple[str, str], print_state: bool = False) -> 'QuantumCircuit':
         """Prepares an SQPAM quantum circuit.
 
         Creates a qiskit QuantumCircuit that prepares a Quantum Audio state 
@@ -279,7 +279,7 @@ class SQPAM():
                 For SQPAM, 'qsize' is ALWAYS 1
             regnames: Label names for 'l' and 'q', passed as a tuple. For 
                 visualization purposes only.
-            Print: Toggles a simple print of the prepared quantum state to the
+            print_state: Toggles a simple print of the prepared quantum state to the
                 console, for visualization purposes only.
 
         Returns: 
@@ -305,10 +305,10 @@ class SQPAM():
         
         # Value setting operations
         for i, theta in enumerate(angles):        
-            self.r2th_x(self, sq_pam, i, theta, l, q, Print)
-            if  Print and i!=len(angles)-1:
+            self.r2th_x(self, sq_pam, i, theta, l, q, print_state)
+            if  print_state and i!=len(angles)-1:
                 print(' + ')
-        if Print:
+        if print_state:
             print()  
         return sq_pam
     
@@ -403,7 +403,7 @@ class QSM():
     def __repr__(self):
         return self.__class__.__name__
     
-    def t_x(self, qc: 'QuantumCircuit', t: int, l: 'QuantumRegister', Print: bool = False) -> None:
+    def t_x(self, qc: 'QuantumCircuit', t: int, l: 'QuantumRegister', print_state: bool = False) -> None:
         """ Auxilary function for matching control conditions with time indexes.
         
         Applies X gates on qubits of the time register whenever the respective 
@@ -415,9 +415,9 @@ class QSM():
             qa: The quantum circuit to be maniputated
             t: Time index that will be converted to binary form for comparison.
             l: Quantum register of the time indexes.
-            Print: Toggles a simple print of the prepared quantum state to the
+            print_state: Toggles a simple print of the prepared quantum state to the
                 console, for visualization purposes only. To be used together 
-                with all other QSM methods with a 'Print' kwarg.
+                with all other QSM methods with a 'print_state' kwarg.
 
         Examples:
             t_x(qa, 6, l)
@@ -428,18 +428,18 @@ class QSM():
         """
         tstr=[]
         for i, l_qubit in enumerate(l):
-            tBit = (t>>i)&1
-            tstr.append(tBit)
-            if not tBit:
+            t_bit = (t>>i)&1
+            tstr.append(t_bit)
+            if not t_bit:
                 qc.x(l_qubit)
-        if Print:
+        if print_state:
             print('(x)|',end='')
 
             for i in reversed(tstr):    
                 print(i, end='')
             print('>',end='')
         
-    def omega_t(self, qa: 'QuantumCircuit', t: int, a: int, l: 'QuantumRegister', q: 'QuantumRegister', Print: bool = False) -> None:
+    def omega_t(self, qa: 'QuantumCircuit', t: int, a: int, l: 'QuantumRegister', q: 'QuantumRegister', print_state: bool = False) -> None:
         """QSM Value-Setting operation.     
         
         Applies a multi-controlled CNOT gate to qubits of amplitude register, 
@@ -453,39 +453,39 @@ class QSM():
             a: Quantized sample from original audio to be converted to binary.
             l: Time register, 'l'.
             q: Amplitude Register, 'q'.
-            Print: Toggles a simple print of the prepared quantum state to the
+            print_state: Toggles a simple print of the prepared quantum state to the
                 console, for visualization purposes only. To be used together 
-                with all other SQPAM methods with a 'Print' kwarg.
+                with all other SQPAM methods with a 'print_state' kwarg.
         """ 
         
         # Applies the necessary NOT gates at index t
         self.t_x(self, qa, t, l)
         astr=[]
-        # Flips a qubit everytime aBit==1
+        # Flips a qubit everytime a_bit==1
         for i, q_qubit in enumerate(q):
-            aBit = (a>>i)&1
-            astr.append(aBit)
-            if aBit:
+            a_bit = (a>>i)&1
+            astr.append(a_bit)
+            if a_bit:
                 qa.mct(l, q_qubit)
 
-        if Print:        
+        if print_state:        
             print('|',end='')       
             for i in reversed(astr):    
                 print(i, end='')
             print('>',end='')
 
 
-        self.t_x(self, qa, t, l, Print)
+        self.t_x(self, qa, t, l, print_state)
         
-    def convert(self, originalAudio):
+    def convert(self, original_audio):
         """ For the QSM encoding scheme, this function is dummy.
         
         QSM expects a quantized signal (N-Bit PCM) as input. 
         No pre-processing is needed after this point.
         """
-        return originalAudio
+        return original_audio
         
-    def prepare(self, quantized_audio: npt.NDArray, size: Tuple[int, int], regnames: Tuple[str, str], Print: bool = False) -> 'QuantumCircuit':
+    def prepare(self, quantized_audio: npt.NDArray, size: Tuple[int, int], regnames: Tuple[str, str], print_state: bool = False) -> 'QuantumCircuit':
         """Prepares a QSM quantum circuit.
 
         Creates a qiskit QuantumCircuit that prepares a Quantum Audio state 
@@ -500,7 +500,7 @@ class QSM():
                 'lsize' qubits for 'l'; 'qsize' qubits for 'q'. 
             regnames: Label names for 'l' and 'q', passed as a tuple. For 
                 visualization purposes only.
-            Print: Toggles a simple print of the prepared quantum state to the
+            print_state: Toggles a simple print of the prepared quantum state to the
                 console, for visualization purposes only.
 
         Returns: 
@@ -525,10 +525,10 @@ class QSM():
 
         # Value setting operations
         for i, sample in enumerate(quantized_audio):        
-            self.omega_t(self, qsm, i, sample, l, q, Print)
-            if Print and i!=len(quantized_audio)-1:
+            self.omega_t(self, qsm, i, sample, l, q, print_state)
+            if print_state and i!=len(quantized_audio)-1:
                 print(' + ', end='')
-        if Print:
+        if print_state:
             print()  
         return qsm
     
@@ -641,7 +641,7 @@ class QuantumAudio():
     def __repr__(self):
         return self.__class__.__name__
     
-    def load_input(self, inputAudio: npt.NDArray[np.floating], bitDepth: int = 1) -> 'QuantumAudio':
+    def load_input(self, input_audio: npt.NDArray[np.floating], bitDepth: int = 1) -> 'QuantumAudio':
         """Loads an audio file and calculates the qubit requirements.
 
         Brings a digital audio signal inside the class for further processing.
@@ -651,7 +651,7 @@ class QuantumAudio():
         quantized input 'qsize'
 
         Args:
-            inputAudio: The audio signal to be converted. If not in 32-bit or 
+            input_audio: The audio signal to be converted. If not in 32-bit or 
                 64-bit float format ('n'-bit integer PCM), specify bit depth.
             bitDepth: Audio bit depth IF using integer PCM. Ignore otherwise.
 
@@ -660,22 +660,22 @@ class QuantumAudio():
             of code.
 
         Examples:
-            >>> floatAudio = [0., -0.25, 0.5 , 0.75,  -0.75  ,  -1.,  0.25]
-            >>> qAudio = qa.QuantumAudio('qpam').load_input(floatAudio)
+            >>> float_audio = [0., -0.25, 0.5 , 0.75,  -0.75  ,  -1.,  0.25]
+            >>> quantum_audio = qa.QuantumAudio('qpam').load_input(float_audio)
             For this input, the QPAM representation will require:
                     3 qubits for encoding time information and 
                     0 qubits for encoding ampĺitude information.
             
-            >>> Int3bitPCMAudio = [0, -1, 2, 3, -3, -4, 1]
-            >>> qAudio = qa.QuantumAudio('qsm').load_input(3bitIntPCMAudio, 3)
+            >>> int_3bit_PCM_audio = [0, -1, 2, 3, -3, -4, 1]
+            >>> quantum_audio = qa.QuantumAudio('qsm').load_input(int_3bit_PCM_audio, 3)
             For this input, the QSM representation will require:
                     3 qubits for encoding time information and 
                     3 qubits for encoding ampĺitude information.
         """
 
         self.lsize = 1
-        if len(inputAudio)>1:
-            self.lsize = int(np.ceil(np.log2(len(inputAudio))))
+        if len(input_audio)>1:
+            self.lsize = int(np.ceil(np.log2(len(input_audio))))
         
         if self.encoder_name == 'qpam':
             self.qsize = 0
@@ -685,8 +685,8 @@ class QuantumAudio():
             self.qsize = bitDepth       
 
         # Zero Padding
-        zp = np.zeros(2**self.lsize - len(inputAudio))
-        self.input = np.concatenate((inputAudio, zp))
+        zp = np.zeros(2**self.lsize - len(input_audio))
+        self.input = np.concatenate((input_audio, zp))
         
         if self.encoder_name =='qsm':
             self.input = self.input.astype(int)
@@ -708,7 +708,7 @@ class QuantumAudio():
         self.converted_input = self.encoder.convert(self, self.input)
         return self
     
-    def prepare(self, tregname: str = 't', aregname: str = 'a', Print: bool = False) -> 'QuantumAudio':
+    def prepare(self, tregname: str = 't', aregname: str = 'a', print_state: bool = False) -> 'QuantumAudio':
         """Creates a Quantum Circuit that prepares the audio representation.
         
         Loads the 'circuit' attribute with the preparation circuit, according
@@ -719,7 +719,7 @@ class QuantumAudio():
             of code.
         """
         self._convert()
-        self.circuit = self.encoder.prepare(self.encoder, self.converted_input, (self.lsize, self.qsize), (tregname, aregname), Print)
+        self.circuit = self.encoder.prepare(self.encoder, self.converted_input, (self.lsize, self.qsize), (tregname, aregname), print_state)
         return self
     
     def measure(self, treg_pos: Optional[int] = None, areg_pos: Optional[int] = None) -> 'QuantumAudio':
