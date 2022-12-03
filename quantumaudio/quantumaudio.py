@@ -48,29 +48,44 @@ class QPAM():
     def __repr__(self):
         return self.__class__.__name__
     
-    def convert(self, original_audio: npt.NDArray) -> npt.NDArray:
+    def convert(self, originalAudio: npt.NDArray) -> npt.NDArray:
         """Converts the digital Audio into an array of probability amplitudes.
 
-        -original_audio: (numpy ndarray);  
+        The audio signal is normalized. The normalized samples can then be
+        interpreted as probability amplitudes. In other words, by squaring every
+        sample, their total sum is now 1.
+
+        Args:
+            originalAudio: Numpy Array containing audio information.  
         
         Returns: 
             A Numpy Array containing normalized probability amplitudes.
         """
-#         print('QPAM Convert')
-        # Changes the amplitude range from [-1, 1] to [0, 1]
-        prepared = (original_audio.copy()+1)/2
+        prepared = (originalAudio.copy()+1)/2
         self.norm = np.linalg.norm(prepared)
         return prepared/self.norm
         
     
-    def prepare(self, digital_amplitudes, size, regnames, Print=False):
+    def prepare(self, digital_amplitudes, size, regnames, Print=False) -> 'QuantumCircuit':
         """Prepares a QPAM quantum circuit.
 
         Creates a qiskit QuantumCircuit that prepares a Quantum Audio state 
         using QPAM (Quantum Probability Amplitude Modulation) representation.
+        The quantum circuits used for audio representations typically contain 
+        two qubit registers, namely, 'l' (which encodes time/index information) 
+        and 'q' (which encodes amplitude information).
 
-        -digital_amplitudes -> (numpy ndarray) Propbability Amplitudes
-        -size -> (Tuple(int,int)) time (lsize) and amplitude (qsize) register sizes, respectively
+        Note: In QPAM, the 'q' (amplitude) register is NOT used as the amplitude 
+        information is encoded in the probability amplitudes of the 'l' (time) 
+        register.
+        
+        Args:
+            digital_amplitudes: Array with propbability amplitudes
+            size: The size of both qubit registers in a tuple (lsize, qsize). 
+                'lsize' qubits for . Similarly,
+                'q' encodes amplitude information in 'qsize' qubits. 
+                
+                (Tuple(int,int)) time (lsize) and amplitude (qsize) register sizes, respectively
                     Note: for QPAM, qsize is ALWAYS 0
         
         -Print -> (bool) Toggles a simple print of the prepared quantum state
