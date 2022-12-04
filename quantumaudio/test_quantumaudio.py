@@ -6,7 +6,6 @@ import numpy as np
 import sys
 
 def test_raise_encoder_name_empty_error():
-    print("here first")
     with pytest.raises(TypeError):
         qpam = QuantumAudio()
 
