@@ -6,7 +6,8 @@
 
 import numpy as np
 import numpy.typing as npt
-from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, Aer, execute
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, execute
+from qiskit_aer import AerProvider
 from qiskit.result import Counts
 from qiskit.tools import job_monitor
 from qiskit.compiler import transpile
@@ -737,7 +738,7 @@ class QuantumAudio():
         self.encoder.measure(self, self.circuit, *additional_args)
         return self
             
-    def run(self, shots: int = 10, backend_name: str = 'aer_simulator', provider=Aer) -> 'QuantumAudio':        
+    def run(self, shots: int = 10, backend_name: str = 'aer_simulator', provider=AerProvider()) -> 'QuantumAudio':        
         """ Runs the Quantum Circuit in an IBMQ job.
 
         Transpiles and runs QuantumAudio.circuit in a qiskit job. Supports IBMQ
