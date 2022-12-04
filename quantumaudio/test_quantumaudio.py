@@ -50,29 +50,29 @@ def quantized_input_audio():
 def test_load_input(qpam, sqpam, qsm, input_audio):
     qpam.load_input(input_audio)
     assert qpam.input.tolist() ==  [0., -0.25, 0.5 , 0.75,  -0.75  ,  -1.,  0.25 ,  0.]
-    assert qpam.lsize == 3
-    assert qpam.qsize == 0
+    assert qpam.treg_size == 3
+    assert qpam.areg_size == 0
     sqpam.load_input(input_audio)
     assert sqpam.input.tolist() ==  [0., -0.25, 0.5 , 0.75,  -0.75  ,  -1.,  0.25 ,  0.]
-    assert sqpam.lsize == 3
-    assert sqpam.qsize == 1
+    assert sqpam.treg_size == 3
+    assert sqpam.areg_size == 1
     qsm.load_input(input_audio)
     assert qsm.input.tolist() == [0, 0, 0, 0, 0, -1, 0, 0]
-    assert qsm.lsize == 3
+    assert qsm.treg_size == 3
 
 def test_load_quantized_input(qpam, sqpam, qsm, input_audio, quantized_input_audio):
     qpam.load_input(quantized_input_audio, 3)
     assert qpam.input.tolist() ==  [0., -0.25, 0.5 , 0.75,  -0.75  ,  -1.,  0.25 ,  0.]
-    assert qpam.lsize == 3
-    assert qpam.qsize == 0
+    assert qpam.treg_size == 3
+    assert qpam.areg_size == 0
     sqpam.load_input(quantized_input_audio, 3)
     assert sqpam.input.tolist() ==  [0., -0.25, 0.5 , 0.75,  -0.75  ,  -1.,  0.25 ,  0.]
-    assert sqpam.lsize == 3
-    assert sqpam.qsize == 1
+    assert sqpam.treg_size == 3
+    assert sqpam.areg_size == 1
     qsm.load_input(quantized_input_audio, 3)
     assert qsm.input.tolist() == [0, -1, 2, 3, -3, -4, 1, 0]
-    assert qsm.lsize == 3
-    assert qsm.qsize == 3
+    assert qsm.treg_size == 3
+    assert qsm.areg_size == 3
 
 @pytest.fixture
 def qpam_loaded(qpam, quantized_input_audio):

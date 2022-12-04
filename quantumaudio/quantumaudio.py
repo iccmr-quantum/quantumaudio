@@ -48,25 +48,25 @@ class QPAM():
         self.norm = np.linalg.norm(prepared)
         return prepared/self.norm
     
-    def prepare(self, digital_amplitudes: npt.NDArray, size: Tuple[int, int], regnames: Tuple[str, str], print_state: bool = False) -> 'QuantumCircuit':
+    def prepare(self, audio_amplitudes: npt.NDArray, regsize: Tuple[int, int], regnames: Tuple[str, str], print_state: bool = False) -> 'QuantumCircuit':
         """Prepares a QPAM quantum circuit.
 
         Creates a qiskit QuantumCircuit that prepares a Quantum Audio state 
         using QPAM (Quantum Probability Amplitude Modulation) representation.
         The quantum circuits used for audio representations typically contain 
-        two qubit registers, namely, 'l' (which encodes time/index information) 
-        and 'q' (which encodes amplitude information).
+        two qubit registers, namely, 'treg' (which encodes time/index information) 
+        and 'areg' (which encodes amplitude information).
 
-        Note: In QPAM, the 'q' (amplitude) register is NOT used as the amplitude 
-        information is encoded in the probability amplitudes of the 'l' (time) 
+        Note: In QPAM, the 'areg' (amplitude) register is NOT used as the amplitude 
+        information is encoded in the probability amplitudes of the 'treg' (time) 
         register.
         
         Args:
-            digital_amplitudes: Array with propbability amplitudes
-            size: The size of both qubit registers in a tuple (lsize, qsize). 
-                'lsize' qubits for 'l'; 'qsize' qubits for 'q'. 
-                For QPAM, 'qsize' is ALWAYS 0
-            regnames: Label names for 'l' and 'q', passed as a tuple. For 
+            audio_amplitudes: Array with propbability amplitudes
+            regsize: The size of both qubit registers in a tuple (treg_size, areg_size). 
+                'treg_size' qubits for 'treg'; 'areg_size' qubits for 'areg'. 
+                For QPAM, 'areg_size' is ALWAYS 0
+            regnames: Label names for 'treg' and 'areg', passed as a tuple. For 
                 visualization purposes only.
             print_state: Toggles a simple print of the prepared quantum state to the
                 console, for visualization purposes only.
@@ -77,20 +77,20 @@ class QPAM():
 #         print('QPAM Prepare')
         
         # QPAM only needs the time register's size .
-        # It doesn't have an amplitude register, so qsize is necessarily 0
-        lsize=size[0]
+        # It doesn't have an amplitude register, so areg_size is necessarily 0
+        treg_size=regsize[0]
         
         # Creates a Quantum Circuit
-        l = QuantumRegister(lsize, regnames[0])
-        qpam = QuantumCircuit(l)
+        treg = QuantumRegister(treg_size, regnames[0])
+        qpam = QuantumCircuit(treg)
         
         # Value Setting Operation
-        qpam.initialize(list(digital_amplitudes), l)
+        qpam.initialize(list(audio_amplitudes), treg)
             
         if print_state:
-            for i, amps in enumerate(digital_amplitudes):
-                print('%.3f|%d>' %(amps, i), end='')
-                if i<len(digital_amplitudes)-1:
+            for i, amps in enumerate(audio_amplitudes):
+                print(f'{amps:.3f}|{i}>', end='')
+                if i<len(audio_amplitudes)-1:
                     print(' + ', end='')
                 else:
                     print()
@@ -105,17 +105,17 @@ class QPAM():
 
         Args:
             qc: A qiskit quantum circuit containing at least 1 quantum register.
-            treg_pos: Index of the QPAM ('l') register in the circuit. 
+            treg_pos: Index of the QPAM ('treg') register in the circuit. 
                 Default is 0
         """
         # Accesses the QuantumRegister containing the time information
-        t = qc.qregs[treg_pos]
+        treg = qc.qregs[treg_pos]
         
-        ct = ClassicalRegister(t.size, 'ct')
-        qc.add_register(ct)
-        qc.measure(t, ct)
+        ctreg = ClassicalRegister(treg.size, 'ct')
+        qc.add_register(ctreg)
+        qc.measure(treg, ctreg)
         
-    def reconstruct(self, lsize: int, counts: 'Counts', shots: int, g: Optional[float] = None) -> npt.NDArray:
+    def reconstruct(self, treg_size: int, counts: 'Counts', shots: int, g: Optional[float] = None) -> npt.NDArray:
         """Builds a digital Audio from qiskit histogram data.
 
         Considering the QPAM encoding scheme, it uses the histogram data stored 
@@ -124,7 +124,7 @@ class QPAM():
         to the [-1 to 1] range.
         
         Args:
-            lsize: Size of the 'l' (time) register.
+            treg_size: Size of the 'treg' (time) register.
             counts: Histogram from a qiskit job result (result.get_counts())
             shots: Amount of identical experiments ran by the qiskit job.
             g: Gain factor. This is a renormalization factor.
@@ -138,7 +138,7 @@ class QPAM():
         
 #         print('QPAM Reconstruct')
         # Builds a zeroed ndarray
-        da = np.zeros(2**lsize)
+        da = np.zeros(2**treg_size)
         
         # Assigns the respective probabilities to the array
         index = np.array([int(i, 2) for i in counts.keys()])
@@ -159,7 +159,7 @@ class SQPAM():
     def __repr__(self):
         return self.__class__.__name__
     
-    def t_x(self, qa: 'QuantumCircuit', t: int, l: 'QuantumRegister', print_state: bool = False) -> None:
+    def treg_index_X(self, qa: 'QuantumCircuit', t: int, treg: 'QuantumRegister', print_state: bool = False) -> None:
         """ Auxilary function for matching control conditions with time indexes.
         
         Applies X gates on qubits of the time register whenever the respective 
@@ -170,32 +170,32 @@ class SQPAM():
         Args:
             qa: The quantum circuit to be maniputated
             t: Time index that will be converted to binary form for comparison.
-            l: Quantum register of the time indexes.
+            treg: Quantum register of the time indexes.
             print_state: Toggles a simple print of the prepared quantum state to the
                 console, for visualization purposes only. To be used together 
                 with all other SQPAM methods with a 'print_state' kwarg.
 
         Examples:
-            t_x(qa, 6, l)
-            (a time register 'l' with, say, 5 qubits in 'qa' at instant 6)
+            treg_index_X(qa, 6, treg)
+            (a time register 'treg' with, say, 5 qubits in 'qa' at instant 6)
 
-            't' = 6 == '00110'. `t_x` applies X gates to qubits 0, 3 and 4
-                (right to left) of register 'l'.
+            't' = 6 == '00110'. `treg_index_X` applies X gates to qubits 0, 3 and 4
+                (right to left) of register 'treg'.
         """
-        tstr=[]
-        for i, l_qubit in enumerate(l):
-            t_bit = (t>>i)&1
-            tstr.append(t_bit)
+        t_bitstring = []
+        for i, treg_qubit in enumerate(treg):
+            t_bit = (t >> i) & 1
+            t_bitstring.append(t_bit)
             if not t_bit:
-                qa.x(l_qubit)
+                qa.x(treg_qubit)
         if print_state:
             print('|',end='')
 
-            for i in reversed(tstr):    
+            for i in reversed(t_bitstring):    
                 print(i, end='')
             print('>',end='')
     
-    def r2th_x(self, qa: 'QuantumCircuit', t: int, a: float, l: 'QuantumRegister', q: 'QuantumRegister', print_state: bool = False) -> None:
+    def mc_Ry_2theta_t(self, qa: 'QuantumCircuit', t: int, a: float, treg: 'QuantumRegister', areg: 'QuantumRegister', print_state: bool = False) -> None:
         """ SQPAM Value-Setting operation.
 
         Applies a controlled Ry(2*theta) gate to the amplitude register, 
@@ -209,32 +209,32 @@ class SQPAM():
             qa: The quantum circuit to be manipulated.
             t: Time index that will be encoded.
             a: Angle of rotation.
-            l: Time register, 'l'.
-            q: Amplitude Register, 'q'.
+            treg: Time register, 'treg'.
+            areg: Amplitude Register, 'areg'.
             print_state: Toggles a simple print of the prepared quantum state to the
                 console, for visualization purposes only. To be used together 
                 with all other SQPAM methods with a 'print_state' kwarg.
         """
 
         # Applies the necessary X gates at index t
-        self.t_x(self, qa, t, l)
+        self.treg_index_X(self, qa, t, treg)
 
         # Creates an auxiliary circuit for the respective multi-controlled gates
         mc_ry = QuantumCircuit()
-        mc_ry.add_register(q)
+        mc_ry.add_register(areg)
         mc_ry.ry(2*a, 0)
-        mc_ry = mc_ry.control(l.size)
+        mc_ry = mc_ry.control(treg.size)
 #         mc_ry.qregs[0].name = 't'
 #         # Appends the circuit to qa
 #         qa += mc_ry 
-        qa.append(mc_ry, [i for i in range(l.size+q.size-1, -1, -1)])
+        qa.append(mc_ry, [i for i in range(treg.size + areg.size - 1, -1, -1)])
 
         # Prints the state
         if print_state:
-            print('[cos(%.3f)|0> + sin(%.3f)|1>]' %(a,a),end='')       
+            print(f'[cos({a:.3f})|0> + sin({a:.3f})|1>]', end='')       
 
         # Applies the X gates again, 'resetting' the time register
-        self.t_x(self, qa, t, l, print_state)
+        self.treg_index_X(self, qa, t, treg, print_state)
     
     def convert(self, original_audio: npt.NDArray) -> npt.NDArray:
         """Converts digital audio into an array of probability amplitudes.
@@ -258,26 +258,26 @@ class SQPAM():
         """
         return np.arcsin(np.sqrt((original_audio+1)/2))
     
-    def prepare(self, angles: npt.NDArray, size: Tuple[int, int], regnames: Tuple[str, str], print_state: bool = False) -> 'QuantumCircuit':
+    def prepare(self, angles: npt.NDArray, regsize: Tuple[int, int], regnames: Tuple[str, str], print_state: bool = False) -> 'QuantumCircuit':
         """Prepares an SQPAM quantum circuit.
 
         Creates a qiskit QuantumCircuit that prepares a Quantum Audio state 
         using SQPAM (Single-Qubit Probability Amplitude Modulation).
         The quantum circuits used for audio representations typically contain 
-        two qubit registers, namely, 'l' (which encodes time/index information) 
-        and 'q' (which encodes amplitude information).
+        two qubit registers, namely, 'treg' (which encodes time/index information) 
+        and 'areg' (which encodes amplitude information).
 
-        Note: In SQPAM (as hinted by its name), the 'q' (amplitude) register 
+        Note: In SQPAM (as hinted by its name), the 'areg' (amplitude) register 
         contains a single qubit. The audio samples are mapped into angles that
-        parametrize single qubit rotations of 'q' - which are then correlated 
-        to index states of the 'l' register. 
+        parametrize single qubit rotations of 'areg' - which are then correlated 
+        to index states of the 'treg' register. 
         
         Args:
             angles: Array with propbability amplitudes
-            size: The size of both qubit registers in a tuple (lsize, qsize). 
-                'lsize' qubits for 'l'; 'qsize' qubits for 'q'. 
-                For SQPAM, 'qsize' is ALWAYS 1
-            regnames: Label names for 'l' and 'q', passed as a tuple. For 
+            regsize: The size of both qubit registers in a tuple (treg_size, areg_size). 
+                'treg_size' qubits for 'treg'; 'areg_size' qubits for 'areg'. 
+                For SQPAM, 'areg_size' is ALWAYS 1
+            regnames: Label names for 'treg' and 'areg', passed as a tuple. For 
                 visualization purposes only.
             print_state: Toggles a simple print of the prepared quantum state to the
                 console, for visualization purposes only.
@@ -288,25 +288,25 @@ class SQPAM():
         """
         
         # QPAM has a single-qubit amplitude register,
-        # so 'qsize' is necessarily 1
-        lsize=size[0]
+        # so 'areg_size' is necessarily 1
+        treg_size=regsize[0]
         # Time register
-        l = QuantumRegister(lsize, regnames[0])
+        treg = QuantumRegister(treg_size, regnames[0])
         # Amplitude register
-        q = QuantumRegister(1, regnames[1])
+        areg = QuantumRegister(1, regnames[1])
 
         # Init quantum circuit
         sq_pam = QuantumCircuit()
-        sq_pam.add_register(q)
-        sq_pam.add_register(l)
+        sq_pam.add_register(areg)
+        sq_pam.add_register(treg)
         
         # Hadamard Gate in the Time Register
-        sq_pam.h(l) 
+        sq_pam.h(treg) 
         
         # Value setting operations
-        for i, theta in enumerate(angles):        
-            self.r2th_x(self, sq_pam, i, theta, l, q, print_state)
-            if  print_state and i!=len(angles)-1:
+        for t, theta in enumerate(angles):        
+            self.mc_Ry_2theta_t(self, sq_pam, t, theta, treg, areg, print_state)
+            if  print_state and t != len(angles)-1:
                 print(' + ')
         if print_state:
             print()  
@@ -321,25 +321,25 @@ class SQPAM():
 
         Args:
             qc: A quantum circuit containing at least 2 quantum registers.
-            treg_pos: Index of the SQPAM ('l') register in the circuit. 
+            treg_pos: Index of the SQPAM ('treg') register in the circuit. 
                 Default is 1
-            areg_pos: Index of the SQPAM ('q') register in the circuit. 
+            areg_pos: Index of the SQPAM ('areg') register in the circuit. 
                 Default is 0
         """
         # Creates classical registers for measurement
-        t=qc.qregs[treg_pos]
-        c=qc.qregs[areg_pos]
+        treg = qc.qregs[treg_pos]
+        areg = qc.qregs[areg_pos]
         
-        ct = ClassicalRegister(t.size, 'ct')
-        ca = ClassicalRegister(c.size, 'ca')
-        qc.add_register(ca)
-        qc.add_register(ct)
+        ctreg = ClassicalRegister(treg.size, 'ct')
+        careg = ClassicalRegister(areg.size, 'ca')
+        qc.add_register(careg)
+        qc.add_register(ctreg)
 
         # Measures the respective quantum registers
-        qc.measure(t, ct)
-        qc.measure(c, ca)
+        qc.measure(treg, ctreg)
+        qc.measure(areg, careg)
         
-    def reconstruct(self, lsize: int, counts: 'Counts', shots: int, inverted: bool = False, both: bool = False) -> npt.NDArray:
+    def reconstruct(self, treg_size: int, counts: 'Counts', shots: int, inverted: bool = False, both: bool = False) -> npt.NDArray:
         """Builds a digital Audio from qiskit histogram data.
 
         Considering the SQPAM encoding scheme, it uses the histogram data stored 
@@ -355,7 +355,7 @@ class SQPAM():
         original or phase-inverted (or both) signals.
         
         Args:
-            lsize: Size of the 'l' (time) register, leading to the full
+            treg_size: Size of the 'treg' (time) register, leading to the full
                 audio size.
             counts: Histogram from a qiskit job result (result.get_counts())
             shots: Amount of identical experiments ran by the qiskit job.
@@ -369,27 +369,28 @@ class SQPAM():
             The signals are in float format.
         """
         
-        N = 2**lsize
+        N = 2**treg_size
         
-        ca = np.zeros(N)
-        sa = np.zeros(N)
+        cosine_amps = np.zeros(N)
+        sine_amps = np.zeros(N)
 
-        for i in counts.keys():
-            (bt, ba) = i.split()
-            t = int(bt,2)
-            a = counts[i]
-            if (ba == '0'):
-                ca[t] = a
-            elif (ba =='1'):
-                sa[t] = a
+        for state in counts.keys():
+            (t_bits, a_bit) = state.split()
+            t = int(t_bits, 2)
+            a = counts[state]
+            
+            if (a_bit == '0'):
+                cosine_amps[t] = a
+            elif (a_bit =='1'):
+                sine_amps[t] = a
 
 
         if both:    
-            return (ca, sa)
+            return (cosine_amps, sine_amps)
         elif inverted:
-            return 2*(ca/(ca+sa))-1
+            return 2*(cosine_amps/(cosine_amps+sine_amps))-1
         else:
-            return 2*(sa/(ca+sa))-1
+            return 2*(sine_amps/(cosine_amps+sine_amps))-1
         
 
 # ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -403,7 +404,7 @@ class QSM():
     def __repr__(self):
         return self.__class__.__name__
     
-    def t_x(self, qc: 'QuantumCircuit', t: int, l: 'QuantumRegister', print_state: bool = False) -> None:
+    def treg_index_X(self, qc: 'QuantumCircuit', t: int, treg: 'QuantumRegister', print_state: bool = False) -> None:
         """ Auxilary function for matching control conditions with time indexes.
         
         Applies X gates on qubits of the time register whenever the respective 
@@ -414,32 +415,34 @@ class QSM():
         Args:
             qa: The quantum circuit to be maniputated
             t: Time index that will be converted to binary form for comparison.
-            l: Quantum register of the time indexes.
+            treg: Quantum register of the time indexes.
             print_state: Toggles a simple print of the prepared quantum state to the
                 console, for visualization purposes only. To be used together 
                 with all other QSM methods with a 'print_state' kwarg.
 
         Examples:
-            t_x(qa, 6, l)
-            (a time register 'l' with, say, 5 qubits in 'qa' at instant 6)
+            treg_index_X(qa, 6, treg)
+            (a time register 'treg' with, say, 5 qubits in 'qa' at instant 6)
 
-            't' = 6 == '00110'. `t_x` applies X gates to qubits 0, 3 and 4
-                (right to left) of register 'l'.
+            't' = 6 == '00110'. `treg_index_X` applies X gates to qubits 0, 3 and 4
+                (right to left) of register 'treg'.
         """
-        tstr=[]
-        for i, l_qubit in enumerate(l):
-            t_bit = (t>>i)&1
-            tstr.append(t_bit)
+
+        t_bitstring = []
+
+        for i, treg_qubit in enumerate(treg):
+            t_bit = (t >> i) & 1
+            t_bitstring.append(t_bit)
             if not t_bit:
-                qc.x(l_qubit)
+                qc.x(treg_qubit)
         if print_state:
             print('(x)|',end='')
 
-            for i in reversed(tstr):    
+            for i in reversed(t_bitstring):    
                 print(i, end='')
             print('>',end='')
         
-    def omega_t(self, qa: 'QuantumCircuit', t: int, a: int, l: 'QuantumRegister', q: 'QuantumRegister', print_state: bool = False) -> None:
+    def omega_t(self, qa: 'QuantumCircuit', t: int, a: int, treg: 'QuantumRegister', areg: 'QuantumRegister', print_state: bool = False) -> None:
         """QSM Value-Setting operation.     
         
         Applies a multi-controlled CNOT gate to qubits of amplitude register, 
@@ -451,22 +454,22 @@ class QSM():
             qa: The quantum circuit to be manipulated.
             t: Time index that will be encoded.
             a: Quantized sample from original audio to be converted to binary.
-            l: Time register, 'l'.
-            q: Amplitude Register, 'q'.
+            treg: Time register, 'treg'.
+            areg: Amplitude Register, 'areg'.
             print_state: Toggles a simple print of the prepared quantum state to the
                 console, for visualization purposes only. To be used together 
                 with all other SQPAM methods with a 'print_state' kwarg.
         """ 
         
         # Applies the necessary NOT gates at index t
-        self.t_x(self, qa, t, l)
+        self.treg_index_X(self, qa, t, treg)
         astr=[]
         # Flips a qubit everytime a_bit==1
-        for i, q_qubit in enumerate(q):
-            a_bit = (a>>i)&1
+        for i, areg_qubit in enumerate(areg):
+            a_bit = (a >> i) & 1
             astr.append(a_bit)
             if a_bit:
-                qa.mct(l, q_qubit)
+                qa.mct(treg, areg_qubit)
 
         if print_state:        
             print('|',end='')       
@@ -475,7 +478,7 @@ class QSM():
             print('>',end='')
 
 
-        self.t_x(self, qa, t, l, print_state)
+        self.treg_index_X(self, qa, t, treg, print_state)
         
     def convert(self, original_audio):
         """ For the QSM encoding scheme, this function is dummy.
@@ -485,20 +488,20 @@ class QSM():
         """
         return original_audio
         
-    def prepare(self, quantized_audio: npt.NDArray, size: Tuple[int, int], regnames: Tuple[str, str], print_state: bool = False) -> 'QuantumCircuit':
+    def prepare(self, quantized_audio: npt.NDArray, regsize: Tuple[int, int], regnames: Tuple[str, str], print_state: bool = False) -> 'QuantumCircuit':
         """Prepares a QSM quantum circuit.
 
         Creates a qiskit QuantumCircuit that prepares a Quantum Audio state 
         using QSM (Quantum State Modulation).
         The quantum circuits used for audio representations typically contain 
-        two qubit registers, namely, 'l' (which encodes time/index information) 
-        and 'q' (which encodes amplitude information).
+        two qubit registers, namely, 'treg' (which encodes time/index information) 
+        and 'areg' (which encodes amplitude information).
 
         Args:
             quantized_audio: Integer Array with the input signal.
-            size: The size of both qubit registers in a tuple (lsize, qsize). 
-                'lsize' qubits for 'l'; 'qsize' qubits for 'q'. 
-            regnames: Label names for 'l' and 'q', passed as a tuple. For 
+            regsize: The size of both qubit registers in a tuple (treg_size, areg_size). 
+                'treg_size' qubits for 'treg'; 'areg_size' qubits for 'areg'. 
+            regnames: Label names for 'treg' and 'areg', passed as a tuple. For 
                 visualization purposes only.
             print_state: Toggles a simple print of the prepared quantum state to the
                 console, for visualization purposes only.
@@ -508,25 +511,25 @@ class QSM():
             instructions.
         """
 
-        lsize=size[0]
-        qsize=size[1]
+        treg_size=regsize[0]
+        areg_size=regsize[1]
         # Time register
-        l = QuantumRegister(lsize, regnames[0])
+        treg = QuantumRegister(treg_size, regnames[0])
         # Amplitude register
-        q = QuantumRegister(qsize, regnames[1])
+        areg = QuantumRegister(areg_size, regnames[1])
 
         # Init quantum circuit
         qsm = QuantumCircuit()
-        qsm.add_register(q)
-        qsm.add_register(l)
+        qsm.add_register(areg)
+        qsm.add_register(treg)
 
         # Hadamard Gate in the Time Register
-        qsm.h(l)
+        qsm.h(treg)
 
         # Value setting operations
-        for i, sample in enumerate(quantized_audio):        
-            self.omega_t(self, qsm, i, sample, l, q, print_state)
-            if print_state and i!=len(quantized_audio)-1:
+        for t, sample in enumerate(quantized_audio):        
+            self.omega_t(self, qsm, t, sample, treg, areg, print_state)
+            if print_state and t != len(quantized_audio)-1:
                 print(' + ', end='')
         if print_state:
             print()  
@@ -541,24 +544,24 @@ class QSM():
 
         Args:
             qc: A quantum circuit containing at least 2 quantum registers.
-            treg_pos: Index of the SQPAM ('l') register in the circuit. 
+            treg_pos: Index of the SQPAM ('treg') register in the circuit. 
                 Default is 1
-            areg_pos: Index of the SQPAM ('q') register in the circuit. 
+            areg_pos: Index of the SQPAM ('areg') register in the circuit. 
                 Default is 0
         """
 
-        t=qc.qregs[treg_pos]
-        a=qc.qregs[areg_pos]
+        treg = qc.qregs[treg_pos]
+        areg = qc.qregs[areg_pos]
        
-        ct = ClassicalRegister(t.size, 'ct')
-        ca = ClassicalRegister(a.size, 'ca')        
-        qc.add_register(ca)
-        qc.add_register(ct)
+        ctreg = ClassicalRegister(treg.size, 'ct')
+        careg = ClassicalRegister(areg.size, 'ca')        
+        qc.add_register(careg)
+        qc.add_register(ctreg)
         
-        qc.measure(t, ct)
-        qc.measure(a, ca)
+        qc.measure(treg, ctreg)
+        qc.measure(areg, careg)
         
-    def reconstruct(self, lsize: int, counts: 'Counts') -> npt.NDArray:
+    def reconstruct(self, treg_size: int, counts: 'Counts') -> npt.NDArray:
         """Builds a digital Audio from qiskit histogram data.
 
         Considering the QSM encoding scheme, it uses the histogram data stored 
@@ -568,7 +571,7 @@ class QSM():
         (amplitude, index) pairs, building an Array.
         
         Args:
-            lsize: Size of the 'l' (time) register.
+            treg_size: Size of the 'treg' (time) register.
             counts: Histogram from a qiskit job result (result.get_counts())
 
         Returns:
@@ -576,18 +579,18 @@ class QSM():
             quantized (int) format.
         """
     
-        N = 2**lsize
-        da = np.zeros(N, int)
+        N = 2**treg_size
+        audio = np.zeros(N, int)
 
-        for i in counts.keys():
-            (bt, ba) = i.split()
-            t = int(bt,2)
+        for state in counts.keys():
+            (t_bits, a_bits) = state.split()
+            t = int(t_bits, 2)
             # The BitArray function converts binary words into signed integers,
-            # in oposition to the int(ba, 2) function.
-            a = BitArray(bin=ba).int
-            da[t] = a
+            # in oposition to the int(a_bit, 2) function.
+            a = BitArray(bin=a_bits).int
+            audio[t] = a
 
-        return da
+        return audio
 
 
 # //////////////////////////////////////////////////////////////////////////////
@@ -630,8 +633,8 @@ class QuantumAudio():
         
         #Qiskit part
         self.circuit = QuantumCircuit()
-        self.lsize = 0 #size of the time register - 'l qubits'
-        self.qsize = 0 #size of the amplitude register - 'q qubits'
+        self.treg_size = 0 # qubit size of the time register
+        self.areg_size = 0 # qubit size of the amplitude register
         
         self.shots = None
         self.job = None
@@ -641,19 +644,19 @@ class QuantumAudio():
     def __repr__(self):
         return self.__class__.__name__
     
-    def load_input(self, input_audio: npt.NDArray[np.floating], bitDepth: int = 1) -> 'QuantumAudio':
+    def load_input(self, input_audio: npt.NDArray[np.floating], bit_depth: int = 1) -> 'QuantumAudio':
         """Loads an audio file and calculates the qubit requirements.
 
         Brings a digital audio signal inside the class for further processing.
         Audio files should be in numpy.ndarray type and be in the (-1. to 1.)
         amplitude range. You can also optionally load a quantized audio signal 
         as input (-N to N-1) range, as long as you specify the bit depth of your
-        quantized input 'qsize'
+        quantized input 'areg_size'
 
         Args:
             input_audio: The audio signal to be converted. If not in 32-bit or 
                 64-bit float format ('n'-bit integer PCM), specify bit depth.
-            bitDepth: Audio bit depth IF using integer PCM. Ignore otherwise.
+            bit_depth: Audio bit depth IF using integer PCM. Ignore otherwise.
 
         Returns:
             Returns itself for using multiple QuantumAudio methods in one line
@@ -673,27 +676,27 @@ class QuantumAudio():
                     3 qubits for encoding ampĺitude information.
         """
 
-        self.lsize = 1
+        self.treg_size = 1
         if len(input_audio)>1:
-            self.lsize = int(np.ceil(np.log2(len(input_audio))))
+            self.treg_size = int(np.ceil(np.log2(len(input_audio))))
         
         if self.encoder_name == 'qpam':
-            self.qsize = 0
+            self.areg_size = 0
         elif self.encoder_name == 'sqpam':
-            self.qsize = 1
+            self.areg_size = 1
         else:
-            self.qsize = bitDepth       
+            self.areg_size = bit_depth       
 
         # Zero Padding
-        zp = np.zeros(2**self.lsize - len(input_audio))
+        zp = np.zeros(2**self.treg_size - len(input_audio))
         self.input = np.concatenate((input_audio, zp))
         
         if self.encoder_name =='qsm':
             self.input = self.input.astype(int)
         else:
-            self.input = self.input.astype(float)/float(2**(bitDepth-1))
+            self.input = self.input.astype(float)/float(2**(bit_depth-1))
         
-        print(f"For this input, the {self.encoder.__name__} representation will require:\n         {self.lsize} qubits for encoding time information and \n         {self.qsize} qubits for encoding ampĺitude information.")
+        print(f"For this input, the {self.encoder.__name__} representation will require:\n         {self.treg_size} qubits for encoding time information and \n         {self.areg_size} qubits for encoding ampĺitude information.")
         return self
         
     def _convert(self) -> 'QuantumAudio':
@@ -719,7 +722,7 @@ class QuantumAudio():
             of code.
         """
         self._convert()
-        self.circuit = self.encoder.prepare(self.encoder, self.converted_input, (self.lsize, self.qsize), (tregname, aregname), print_state)
+        self.circuit = self.encoder.prepare(self.encoder, self.converted_input, (self.treg_size, self.areg_size), (tregname, aregname), print_state)
         return self
     
     def measure(self, treg_pos: Optional[int] = None, areg_pos: Optional[int] = None) -> 'QuantumAudio':
@@ -780,7 +783,7 @@ class QuantumAudio():
         if self.encoder_name == 'qpam' or self.encoder_name == 'sqpam':
             additional_args += [self.shots]        
 
-        self.output = self.encoder.reconstruct(self, self.lsize, self.counts, *additional_args, **additional_kwargs)
+        self.output = self.encoder.reconstruct(self, self.treg_size, self.counts, *additional_args, **additional_kwargs)
         return self
         
     def plot_audio(self) -> None:
@@ -789,7 +792,7 @@ class QuantumAudio():
         Uses matplotlib.
         """
         plt.figure(figsize=(20, 3))
-        plt.plot(np.zeros(2**self.lsize), '-k', ms=0.1)
+        plt.plot(np.zeros(2**self.treg_size), '-k', ms=0.1)
         plt.plot(self.input)
 #         plt.axis('off')
         plt.title('input')
@@ -797,7 +800,7 @@ class QuantumAudio():
         plt.close()
         
         plt.figure(figsize=(20, 3))
-        plt.plot(np.zeros(2**self.lsize), '-k', ms=0.1)
+        plt.plot(np.zeros(2**self.treg_size), '-k', ms=0.1)
         plt.plot(self.output, 'r')
 #         plt.axis('off')
         plt.title('output')
