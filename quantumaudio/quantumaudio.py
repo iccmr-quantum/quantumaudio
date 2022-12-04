@@ -12,7 +12,6 @@ from qiskit.tools import job_monitor
 from qiskit.compiler import transpile
 from qiskit.visualization import plot_histogram
 from bitstring import BitArray
-#from abc import ABC, abstractmethod
 from IPython.display import display, Audio
 import matplotlib.pyplot as plt
 import warnings
@@ -74,8 +73,7 @@ class QPAM():
         Returns: 
             A qiskit QuantumCircuit with specific QPAM preparation instructions.
         """
-#         print('QPAM Prepare')
-        
+
         # QPAM only needs the time register's size .
         # It doesn't have an amplitude register, so areg_size is necessarily 0
         treg_size=regsize[0]
@@ -119,7 +117,7 @@ class QPAM():
         """Builds a digital Audio from qiskit histogram data.
 
         Considering the QPAM encoding scheme, it uses the histogram data stored 
-        in a Counts object (qiskit.result.counts.Counts) to reconstruct an audio
+        in a Counts object (qiskit.result.Counts) to reconstruct an audio
         signal. It renormalizes the histogram counts and remaps the signal back 
         to the [-1 to 1] range.
         
@@ -136,12 +134,11 @@ class QPAM():
         """
         g = self.norm if g is None else g
         
-#         print('QPAM Reconstruct')
         # Builds a zeroed ndarray
         da = np.zeros(2**treg_size)
         
         # Assigns the respective probabilities to the array
-        index = np.array([int(i, 2) for i in counts.keys()])
+        index = np.array([int(key, 2) for key in counts])
         da[index] = list(counts.values())
 
         # Renormalization, rescaling, and shifting
@@ -224,9 +221,7 @@ class SQPAM():
         mc_ry.add_register(areg)
         mc_ry.ry(2*a, 0)
         mc_ry = mc_ry.control(treg.size)
-#         mc_ry.qregs[0].name = 't'
-#         # Appends the circuit to qa
-#         qa += mc_ry 
+        # Appends the circuit to qa
         qa.append(mc_ry, [i for i in range(treg.size + areg.size - 1, -1, -1)])
 
         # Prints the state
@@ -287,9 +282,9 @@ class SQPAM():
             instructions.
         """
         
-        # QPAM has a single-qubit amplitude register,
+        # SQPAM has a single-qubit amplitude register,
         # so 'areg_size' is necessarily 1
-        treg_size=regsize[0]
+        treg_size = regsize[0]
         # Time register
         treg = QuantumRegister(treg_size, regnames[0])
         # Amplitude register
@@ -343,7 +338,7 @@ class SQPAM():
         """Builds a digital Audio from qiskit histogram data.
 
         Considering the SQPAM encoding scheme, it uses the histogram data stored 
-        in a Counts object (qiskit.result.counts.Counts) to reconstruct an audio
+        in a Counts object (qiskit.result.Counts) to reconstruct an audio
         signal. It separates the even bins (sine coefficients) from the odd 
         bins (cosine coefficients) of the histogram. Since the `SQPAM.convert()`
         method used the `np.arcsin()` function to prepare the state, the even 
@@ -374,7 +369,7 @@ class SQPAM():
         cosine_amps = np.zeros(N)
         sine_amps = np.zeros(N)
 
-        for state in counts.keys():
+        for state in counts:
             (t_bits, a_bit) = state.split()
             t = int(t_bits, 2)
             a = counts[state]
@@ -511,8 +506,8 @@ class QSM():
             instructions.
         """
 
-        treg_size=regsize[0]
-        areg_size=regsize[1]
+        treg_size, areg_size = regsize
+
         # Time register
         treg = QuantumRegister(treg_size, regnames[0])
         # Amplitude register
@@ -582,7 +577,7 @@ class QSM():
         N = 2**treg_size
         audio = np.zeros(N, int)
 
-        for state in counts.keys():
+        for state in counts:
             (t_bits, a_bits) = state.split()
             t = int(t_bits, 2)
             # The BitArray function converts binary words into signed integers,
@@ -735,9 +730,9 @@ class QuantumAudio():
             of code.
         """
         additional_args = []
-        if treg_pos != None:
+        if treg_pos is not None:
             additional_args += [treg_pos]
-        if areg_pos != None:
+        if areg_pos is not None:
             additional_args += [areg_pos]
         self.encoder.measure(self, self.circuit, *additional_args)
         return self
@@ -772,7 +767,7 @@ class QuantumAudio():
         """Builds an audio signal from a qiskit result histogram.
 
         Depending on the chosen encoding technique, reconstructs an audio file
-        using the histogram in QuantumAudio.counts (qiskit.result.counts.Counts)
+        using the histogram in QuantumAudio.counts (qiskit.result.Counts)
 
         Returns:
             Returns itself for using multiple QuantumAudio methods in one line
@@ -794,7 +789,7 @@ class QuantumAudio():
         plt.figure(figsize=(20, 3))
         plt.plot(np.zeros(2**self.treg_size), '-k', ms=0.1)
         plt.plot(self.input)
-#         plt.axis('off')
+        #plt.axis('off')
         plt.title('input')
         plt.show()
         plt.close()
@@ -802,7 +797,7 @@ class QuantumAudio():
         plt.figure(figsize=(20, 3))
         plt.plot(np.zeros(2**self.treg_size), '-k', ms=0.1)
         plt.plot(self.output, 'r')
-#         plt.axis('off')
+        #plt.axis('off')
         plt.title('output')
         plt.show()
     
