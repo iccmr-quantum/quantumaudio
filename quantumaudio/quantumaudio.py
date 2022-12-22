@@ -162,7 +162,7 @@ class SQPAM():
         
         Applies X gates on qubits of the time register whenever the respective 
         bit of the current time index (in binary representation) is 0. As a 
-        result, the qubit will be flipped to |1> and succesfully trigger 
+        result, the qubit will be flipped to \|1> and succesfully trigger 
         necessary control conditions of the circuit for this time index.
 
         Args:
@@ -177,7 +177,7 @@ class SQPAM():
             treg_index_X(qa, 6, treg)
             (a time register 'treg' with, say, 5 qubits in 'qa' at instant 6)
 
-            't' = 6 == '00110'. `treg_index_X` applies X gates to qubits 0, 3 and 4
+            't' = 6 == '00110'. *treg_index_X()* applies X gates to qubits 0, 3 and 4
                 (right to left) of register 'treg'.
         """
         t_bitstring = []
@@ -238,12 +238,12 @@ class SQPAM():
         The audio signal is mapped to an array of angles. The angles can then 
         be interpreted as real-valued parameters for a trigonometric 
         representation subspace of a qubit. In other words, the angles are used 
-        to rotate a qubit - originally in the |0> state - to the following 
-        state: ( cos(angle)|0> + sin(angle)|1> ). Notice that this preserves 
+        to rotate a qubit - originally in the \|0> state - to the following 
+        state: ( cos(angle)\|0> + sin(angle)\|1> ). Notice that this preserves 
         probabilities, as cos^2 + sin^2 = 1.
 
-        Note: By convention, we are using the `np.arcsin` function to calculate 
-        the angles. This means that the `SQPAM.reconstruct()` method will use 
+        Note: By convention, we are using the *np.arcsin* function to calculate 
+        the angles. This means that the *SQPAM.reconstruct()* method will use 
         the even (sine) bins of the histogram to retrieve the signal.
 
         Args:
@@ -341,8 +341,8 @@ class SQPAM():
         Considering the SQPAM encoding scheme, it uses the histogram data stored 
         in a Counts object (qiskit.result.Counts) to reconstruct an audio
         signal. It separates the even bins (sine coefficients) from the odd 
-        bins (cosine coefficients) of the histogram. Since the `SQPAM.convert()`
-        method used the `np.arcsin()` function to prepare the state, the even 
+        bins (cosine coefficients) of the histogram. Since the *SQPAM.convert()*
+        method used the *np.arcsin()* function to prepare the state, the even 
         bins should be used for reconstructing the signal.
 
         However, the relations between sine and cosine means that a 
@@ -405,7 +405,7 @@ class QSM():
         
         Applies X gates on qubits of the time register whenever the respective 
         bit of the current time index (in binary representation) is 0. As a 
-        result, the qubit will be flipped to |1> and succesfully trigger 
+        result, the qubit will be flipped to \|1> and succesfully trigger 
         necessary control conditions of the circuit for this time index.
 
         Args:
@@ -420,7 +420,7 @@ class QSM():
             treg_index_X(qa, 6, treg)
             (a time register 'treg' with, say, 5 qubits in 'qa' at instant 6)
 
-            't' = 6 == '00110'. `treg_index_X` applies X gates to qubits 0, 3 and 4
+            't' = 6 == '00110'. *treg_index_X()* applies X gates to qubits 0, 3 and 4
                 (right to left) of register 'treg'.
         """
 
