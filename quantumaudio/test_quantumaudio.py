@@ -123,15 +123,15 @@ def test_reconstruction_qsm(qsm_loaded):
     assert np.sum((qsm_loaded.output - qsm_loaded.input)) == 0
 
 def test_bypass_workflow_qpam(qpam_loaded):
-    qpam_loaded.prepare().measure().run(1000).reconstruct_audio()
+    qpam_loaded.prepare().measure().run(10000).reconstruct_audio()
     assert np.sum((qpam_loaded.output - qpam_loaded.input)**2) < 0.05
 
 def test_bypass_workflow_sqpam(sqpam_loaded):
-    sqpam_loaded.prepare().measure().run(1000).reconstruct_audio()
+    sqpam_loaded.prepare().measure().run(10000).reconstruct_audio()
     assert np.sum((sqpam_loaded.output - sqpam_loaded.input)**2) < 0.1
 
 def test_bypass_workflow_qsm(qsm_loaded):
-    qsm_loaded.prepare().measure().run(1000).reconstruct_audio()
+    qsm_loaded.prepare().measure().run(10000).reconstruct_audio()
     assert np.sum((qsm_loaded.output - qsm_loaded.input)) == 0
 
 def test_print_qpam(qpam_loaded, capfd):

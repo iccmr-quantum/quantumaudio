@@ -632,7 +632,7 @@ class QuantumAudio():
         self.treg_size = 0 # qubit size of the time register
         self.areg_size = 0 # qubit size of the amplitude register
         
-        self.shots = None
+        self.shots: Optional[int] = None
         self.job = None
         self.result = None
         self.counts = {}
