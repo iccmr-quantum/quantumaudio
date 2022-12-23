@@ -11,11 +11,11 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'QuantumAudio Module'
+project = 'quantumaudio'
 copyright = '2022, Paulo Vitor Itaboraí, QuTune Project, ICCMR Quantum'
 author = 'Paulo Vitor Itaboraí'
 release = '0.0.2'
-
+version = '0.0.2'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 

@@ -3,6 +3,7 @@ sinewave.flac
 examples_with_supercollider/.ipynb_checkpoints/*
 *egg-info*
 build/
+dist/
 quantumaudio/__pycache__/*
 qa/*
 __pycache__/*
