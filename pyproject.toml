@@ -24,4 +24,4 @@ Source = "https://github.com/iccmr-quantum/quantumaudio"
 test = ["pytest >=7.2"]
 doc = ["sphinx", "sphinx-rtd-theme"]
 dev = ["pytest >=7.2", "flit >=3.2,<4"]
-examples = ["cython", "pyliblo", "supercollider", "librosa"]
+examples = ["cython", "pyliblo3", "supercollider", "librosa"]
