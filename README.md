@@ -33,7 +33,7 @@ For running the [supercollider examples](https://github.com/iccmr-quantum/quantu
 
 ## Installation
 
-This python module is distributed as a package in PyPi. It can be installed in any operating system by using the `pip install` syntax:
+This python module is distributed as a package in PyPi. It can be installed in any operating system by using `pip` in a console or terminal:
 
 - Windows
 ```console
@@ -64,6 +64,8 @@ Clone/Fork this repo and help contributing to the code! Pull Requests are very w
 ## Acknowledgements
 
 This repo was created by [Paulo Itaboraí](https://itabora.space) as part of the [QuTune Project](https://iccmr-quantum.github.io/) and of his ongoing Master's research at the [Interdisciplinary Centre for Computer Music Research](cmr.soc.plymouth.ac.uk/), University of Plymouth, UK.
+
+It is also considered to be auxiliary material of the book [Quantum Computer Music: Foundations, Methods and Advanced Concepts](https://link.springer.com/chapter/10.1007/978-3-031-13909-3) edited by [Eduardo Reck Miranda](http://neuromusic.soc.plymouth.ac.uk/), specifically, [chapter 10](https://link.springer.com/chapter/10.1007/978-3-031-13909-3_10), on Quantum Representations of Audio, by Paulo Itaboraí and Eduardo Miranda.
 
 `quantumaudio` has an [MIT license](https://github.com/iccmr-quantum/quantumaudio/blob/main/LICENSE). If you use this code in your research or art, please cite it according to the [citation file](https://github.com/iccmr-quantum/quantumaudio/blob/main/CITATION.cff).
 
