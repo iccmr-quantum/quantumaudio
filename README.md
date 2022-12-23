@@ -46,7 +46,18 @@ pip3 install quantumaudio
 
 Optionally, you can download the latest [release](https://github.com/iccmr-quantum/quantumaudio/releases), which also contains the examples and tutorial notebooks.
 
-Ideally, you would `pip install` the package in your own python environment and then download the examples from the releases page.
+It is possible to install the additional python dependencies for running the supercollider examples automatically, by running the installation command with the `[examples]` optional dependencies:
+
+- Windows
+```console
+pip install quantumaudio[examples]
+```
+- Mac & Linux
+```console
+pip3 install quantumaudio[examples]
+```
+
+Ideally, you would `pip install` the package in your own python environment and then download the latest example/tutorial files from the [releases](https://github.com/iccmr-quantum/quantumaudio/releases) page.
 
 ## Usage
 
@@ -65,7 +76,7 @@ Most methods and functions in the module contain docstrings for better understan
 
 ## Contributing
 
-Clone/Fork this repo and help contributing to the code! Pull Requests are very welcome. You can also contact the [main author](https://github.com/Itaborala) to exchange ideas (highly reccomended). Make sure the [pytests](https://github.com/iccmr-quantum/quantumaudio/blob/main/quantumaudio/test_quantumaudio.py) are working!
+Clone/Fork this repo and help contributing to the code! Pull Requests are very welcome. You can also contact the [main author](https://github.com/Itaborala) to exchange ideas (highly reccomended). Make sure to install the `[dev]` and `[doc]` optional dependencies for running necessary [pytests](https://github.com/iccmr-quantum/quantumaudio/blob/main/quantumaudio/test_quantumaudio.py).
 
 ## Acknowledgements
 
