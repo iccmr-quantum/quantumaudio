@@ -14,7 +14,14 @@ classifiers = [
 requires-python = ">=3.8"
 dynamic = ["version", "description"]
 dependencies = ['qiskit', 'numpy', 'ipython', 'matplotlib', 'bitstring']
+keywords = ["quantum", "qiskit", "quantum computing", "quantum computer music", "audio", "quantum audio"]
 
 [project.urls]
 Documentation = "https://github.com/iccmr-quantum/quantumaudio"
 Source = "https://github.com/iccmr-quantum/quantumaudio"
+
+[project.optional-dependencies]
+test = ["pytest >=7.2"]
+doc = ["sphinx", "sphinx-rtd-theme"]
+dev = ["pytest >=7.2", "flit >=3.2,<4"]
+examples = ["pyliblo", "supercollider", "librosa", "soundfile"]
