@@ -61,7 +61,7 @@ You may gain insight by learning more about [Qiskit](https://qiskit.org/learn) a
 
 ## API Reference
 
-Most methods and functions in the module contain docstrings for better understanding the implementation. This API documentation is available and readable here.
+Most methods and functions in the module contain docstrings for better understanding the implementation. This API documentation is available and readable [here](https://quantumaudio.readthedocs.io/en/latest/).
 
 ## Contributing
 

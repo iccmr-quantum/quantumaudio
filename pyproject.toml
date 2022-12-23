@@ -17,7 +17,7 @@ dependencies = ['qiskit', 'numpy', 'ipython', 'matplotlib', 'bitstring']
 keywords = ["quantum", "qiskit", "quantum computing", "quantum computer music", "audio", "quantum audio"]
 
 [project.urls]
-Documentation = "https://github.com/iccmr-quantum/quantumaudio"
+Documentation = "https://quantumaudio.readthedocs.io/en/latest/"
 Source = "https://github.com/iccmr-quantum/quantumaudio"
 
 [project.optional-dependencies]

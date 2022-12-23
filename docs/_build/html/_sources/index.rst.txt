@@ -8,6 +8,8 @@ Welcome to quantumaudio module's API documentation!
 
 This page contains the API reference of the quantumaudio module.
 
+Version: 0.0.2
+
 NOTE:
 *****
 
