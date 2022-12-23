@@ -46,7 +46,7 @@ pip3 install quantumaudio
 
 Optionally, you can download the latest [release](https://github.com/iccmr-quantum/quantumaudio/releases), which also contains the examples and tutorial notebooks.
 
-Ideally you would `pip install` the package in your own python environment and then download and run the examples from the releases page.
+Ideally, you would `pip install` the package in your own python environment and then download the examples from the releases page.
 
 ## Usage
 
