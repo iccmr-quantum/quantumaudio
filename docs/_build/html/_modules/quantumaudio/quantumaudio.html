@@ -66,11 +66,18 @@
            <div itemprop="articleBody">
              
   <h1>Source code for quantumaudio.quantumaudio</h1><div class="highlight"><pre>
-<span></span><span class="ch">#!/usr/bin/env python</span>
-<span class="c1"># coding: utf-8</span>
-
-<span class="c1"># #     quantumaudio</span>
-<span class="c1"># ## A Python Class Implementation for Quantum Representations of Audio</span>
+<span></span><span class="c1"># ==============================================================================</span>
+<span class="c1">#                                  quantumaudio</span>
+<span class="c1">#</span>
+<span class="c1"># A Python class implementation for Quantum Representations of Audio in Qiskit</span>
+<span class="c1">#</span>
+<span class="c1"># Paulo Vitor Itaboraí (2022-2023)</span>
+<span class="c1">#</span>
+<span class="c1"># Itaborala @ QuTune Project, ICCMR Quantum - University of Plymotuh</span>
+<span class="c1">#</span>
+<span class="c1"># https://github.com/iccmr-quantum/quantumaudio (repo)</span>
+<span class="c1"># https://iccmr-quantum.github.io/ (qutune website)</span>
+<span class="c1"># ==============================================================================</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
@@ -226,7 +233,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
     
 <div class="viewcode-block" id="SQPAM.treg_index_X"><a class="viewcode-back" href="../../quantumaudio.html#quantumaudio.quantumaudio.SQPAM.treg_index_X">[docs]</a>    <span class="k">def</span> <span class="nf">treg_index_X</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qa</span><span class="p">:</span> <span class="s1">&#39;QuantumCircuit&#39;</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">treg</span><span class="p">:</span> <span class="s1">&#39;QuantumRegister&#39;</span><span class="p">,</span> <span class="n">print_state</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot; Auxilary function for matching control conditions with time indexes.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot; Auxilary function for matching control conditions with time indexes.</span>
 <span class="sd">        </span>
 <span class="sd">        Applies X gates on qubits of the time register whenever the respective </span>
 <span class="sd">        bit of the current time index (in binary representation) is 0. As a </span>
@@ -301,7 +308,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">treg_index_X</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qa</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">treg</span><span class="p">,</span> <span class="n">print_state</span><span class="p">)</span></div>
     
 <div class="viewcode-block" id="SQPAM.convert"><a class="viewcode-back" href="../../quantumaudio.html#quantumaudio.quantumaudio.SQPAM.convert">[docs]</a>    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">original_audio</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Converts digital audio into an array of probability amplitudes.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Converts digital audio into an array of probability amplitudes.</span>
 
 <span class="sd">        The audio signal is mapped to an array of angles. The angles can then </span>
 <span class="sd">        be interpreted as real-valued parameters for a trigonometric </span>
@@ -469,7 +476,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
     
 <div class="viewcode-block" id="QSM.treg_index_X"><a class="viewcode-back" href="../../quantumaudio.html#quantumaudio.quantumaudio.QSM.treg_index_X">[docs]</a>    <span class="k">def</span> <span class="nf">treg_index_X</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qc</span><span class="p">:</span> <span class="s1">&#39;QuantumCircuit&#39;</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">treg</span><span class="p">:</span> <span class="s1">&#39;QuantumRegister&#39;</span><span class="p">,</span> <span class="n">print_state</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot; Auxilary function for matching control conditions with time indexes.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot; Auxilary function for matching control conditions with time indexes.</span>
 <span class="sd">        </span>
 <span class="sd">        Applies X gates on qubits of the time register whenever the respective </span>
 <span class="sd">        bit of the current time index (in binary representation) is 0. As a </span>

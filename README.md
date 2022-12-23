@@ -1,5 +1,5 @@
 # quantumaudio
-Python package for Quantum Representations of Audio in qubit systems & examples
+Quantumaudio Module: A Python package for Quantum Representations of Audio in qubit systems & examples
 
 `quantumaudio` is a Python module with class implementations for building quantum circuits that encode and decode audio signals as quantum states. This is primarily aimed for quantum computing simulators, but it *might* also run on real quantum hardware. The main objective is to have a readily available tools for using quantum representations of audio in artistic contexts and for studying future Quantum Signal Processing algorithms for audio.
 

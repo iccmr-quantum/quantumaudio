@@ -1,8 +1,15 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# #     quantumaudio
-# ## A Python Class Implementation for Quantum Representations of Audio
+# ==============================================================================
+#                                  quantumaudio
+#
+# A Python class implementation for Quantum Representations of Audio in Qiskit
+#
+# Paulo Vitor Itaboraí (2022-2023)
+#
+# Itaborala @ QuTune Project, ICCMR Quantum - University of Plymotuh
+#
+# https://github.com/iccmr-quantum/quantumaudio (repo)
+# https://iccmr-quantum.github.io/ (qutune website)
+# ==============================================================================
 
 import numpy as np
 import numpy.typing as npt
@@ -158,7 +165,7 @@ class SQPAM():
         return self.__class__.__name__
     
     def treg_index_X(self, qa: 'QuantumCircuit', t: int, treg: 'QuantumRegister', print_state: bool = False) -> None:
-        """ Auxilary function for matching control conditions with time indexes.
+        r""" Auxilary function for matching control conditions with time indexes.
         
         Applies X gates on qubits of the time register whenever the respective 
         bit of the current time index (in binary representation) is 0. As a 
@@ -233,7 +240,7 @@ class SQPAM():
         self.treg_index_X(self, qa, t, treg, print_state)
     
     def convert(self, original_audio: npt.NDArray) -> npt.NDArray:
-        """Converts digital audio into an array of probability amplitudes.
+        r"""Converts digital audio into an array of probability amplitudes.
 
         The audio signal is mapped to an array of angles. The angles can then 
         be interpreted as real-valued parameters for a trigonometric 
@@ -401,7 +408,7 @@ class QSM():
         return self.__class__.__name__
     
     def treg_index_X(self, qc: 'QuantumCircuit', t: int, treg: 'QuantumRegister', print_state: bool = False) -> None:
-        """ Auxilary function for matching control conditions with time indexes.
+        r""" Auxilary function for matching control conditions with time indexes.
         
         Applies X gates on qubits of the time register whenever the respective 
         bit of the current time index (in binary representation) is 0. As a 
