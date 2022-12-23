@@ -1,5 +1,6 @@
 sinewave.flac
 .ipynb_checkpoints/*
+examples_with_supercollider/.ipynb_checkpoints/*
 *egg-info*
 build/
 quantumaudio/__pycache__/*
