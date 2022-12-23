@@ -44,9 +44,15 @@ pip install quantumaudio
 pip3 install quantumaudio
 ```
 
+Optionally, you can download the latest [release](https://github.com/iccmr-quantum/quantumaudio/releases), which also contains the examples and tutorial notebooks.
+
+Ideally you would `pip install` the package in your own python environment and then download and run the examples from the releases page.
+
 ## Usage
 
 To learn how to use this module, refer to the [tutorial](https://github.com/iccmr-quantum/quantumaudio/blob/main/tutorial_quantum_audio_module.ipynb) notebook.
+
+Both the tutorial and supercollider examples were written as [Jupyter Notebooks](https://jupyter.org/install) that can be read inside this repo, or run in your local Jupyter Notebook server.
 
 ## Feedback and Getting help
 Please open a [new issue](https://github.com/iccmr-quantum/quantumaudio/issues/new), to help improve the code. They are most welcome.
