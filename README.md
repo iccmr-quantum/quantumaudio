@@ -86,6 +86,8 @@ Clone/Fork this repo and help contributing to the code! Pull Requests are very w
 
 This repo was created by the quantum computer music team at the [Interdisciplinary Centre for Computer Music Research (ICCMR)](https://www.plymouth.ac.uk/research/iccmr), University of Plymouth, UK. [Paulo Itaboraí](https://itabora.space) is the lead developer.
 
+See also the [QuTune Project](https://iccmr-quantum.github.io/) repository for other resources developed by the ICCMR group. 
+
 `quantumaudio` has an [MIT license](https://github.com/iccmr-quantum/quantumaudio/blob/main/LICENSE). If you use this code in your research or art, please cite it according to the [citation file](https://github.com/iccmr-quantum/quantumaudio/blob/main/CITATION.cff).
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
