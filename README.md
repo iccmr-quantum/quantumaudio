@@ -28,6 +28,7 @@ The `quantumaudio` package alone has the following dependencies:
 For running the [supercollider examples](https://github.com/iccmr-quantum/quantumaudio/tree/main/examples_with_supercollider), additional packages are needed:
 
 - SuperCollider scsynth ([install SuperCollider](https://supercollider.github.io/downloads))
+- Cython
 - [pyliblo](https://pypi.org/project/pyliblo/)
 - [python-supercollider client](https://pypi.org/project/supercollider/) (`pip install supercollider`)
 
@@ -58,6 +59,9 @@ pip3 install quantumaudio[examples]
 ```
 
 Ideally, you would `pip install` the package in your own python environment and then download the latest example/tutorial files from the [releases](https://github.com/iccmr-quantum/quantumaudio/releases) page.
+
+### NOTE
+There is a known bug when installing `pyliblo` packages through `pip install quantumaudio[examples]` in some systems. A temporary workaround is shown [here](https://github.com/iccmr-quantum/quantumaudio/issues/4).
 
 ## Usage
 
