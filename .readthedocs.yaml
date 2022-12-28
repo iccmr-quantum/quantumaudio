@@ -26,8 +26,7 @@ formats:
 
 # Optionally declare the Python requirements required to build your docs
 python:
-   install:
-# Install quantumaudio package
-   - method: pip
-   path: .
-
+  # Install our python package before building the docs
+  install:
+    - method: pip
+      path: .
