@@ -19,6 +19,7 @@ keywords = ["quantum", "qiskit", "quantum computing", "quantum computer music", 
 [project.urls]
 Documentation = "https://quantumaudio.readthedocs.io/en/latest/"
 Source = "https://github.com/iccmr-quantum/quantumaudio"
+ICCMR_Website = "https://www.plymouth.ac.uk/research/iccmr"
 
 [project.optional-dependencies]
 test = ["pytest >=7.2"]
