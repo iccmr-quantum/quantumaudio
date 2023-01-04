@@ -8,7 +8,7 @@ Welcome to quantumaudio module's API documentation!
 
 This page contains the API reference of the quantumaudio module.
 
-Version: 0.0.2rc1
+Version: 0.0.2rc2
 
 NOTE:
 *****
@@ -21,6 +21,7 @@ If you are looking for documentation on How to Use this package, there is a Jupy
    :caption: Contents:
 
    modules
+   tutorial_quantum_audio_module
    license
 
 

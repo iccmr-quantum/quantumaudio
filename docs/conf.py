@@ -16,12 +16,12 @@ project = 'quantumaudio'
 copyright = '2022, Paulo Vitor Itaboraí, ICCMR'
 author = 'Paulo Vitor Itaboraí'
 release = '0.0.2'
-version = '0.0.2rc1'
+version = '0.0.2rc2'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["sphinx.ext.todo", "sphinx.ext.viewcode", "sphinx.ext.autodoc", "sphinx.ext.napoleon"]
+extensions = ["sphinx.ext.todo", "sphinx.ext.viewcode", "sphinx.ext.autodoc", "sphinx.ext.napoleon", "nbsphinx"]
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
