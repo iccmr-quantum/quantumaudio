@@ -11,9 +11,9 @@ readme = "README.md"
 classifiers = [
     "License :: OSI Approved :: MIT License",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dynamic = ["version", "description"]
-dependencies = ['qiskit', 'numpy', 'ipython', 'matplotlib', 'bitstring']
+dependencies = ['qiskit', 'numpy', 'ipython', 'matplotlib', 'bitstring', 'pylatexenc']
 keywords = ["quantum", "qiskit", "quantum computing", "quantum computer music", "audio", "quantum audio"]
 
 [project.urls]
@@ -23,6 +23,6 @@ ICCMR_Website = "https://www.plymouth.ac.uk/research/iccmr"
 
 [project.optional-dependencies]
 test = ["pytest >=7.2"]
-doc = ["sphinx", "sphinx-rtd-theme"]
+doc = ["sphinx >=5.3", "sphinx-rtd-theme >=1.1"]
 dev = ["pytest >=7.2", "flit >=3.2,<4"]
 examples = ["cython", "pyliblo>=0.9.1", "supercollider", "librosa"]
