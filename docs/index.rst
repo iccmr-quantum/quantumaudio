@@ -21,7 +21,7 @@ If you are looking for documentation on How to Use this package, there is a Jupy
    :caption: Contents:
 
    modules
-   tutorial_quantum_audio_module
+   tutorial
    license
 
 
