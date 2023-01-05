@@ -26,6 +26,7 @@ extensions = ["sphinx.ext.todo", "sphinx.ext.viewcode", "sphinx.ext.autodoc", "s
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
 
+# remova package name
 add_module_names = False
 
 # -- Options for HTML output -------------------------------------------------
@@ -34,19 +35,3 @@ add_module_names = False
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
-# Monkey-patch autosummary template context
-#from sphinx.ext.autosummary.generate import AutosummaryRenderer
-
-
-#def smart_fullname(fullname):
-#    parts = fullname.split(".")
-#    return ".".join(parts[1:])
-
-
-#def fixed_init(self, app, template_dir=None):
-#    AutosummaryRenderer.__old_init__(self, app, template_dir)
-#    self.env.filters["smart_fullname"] = smart_fullname
-
-
-#AutosummaryRenderer.__old_init__ = AutosummaryRenderer.__init__
-#AutosummaryRenderer.__init__ = fixed_init

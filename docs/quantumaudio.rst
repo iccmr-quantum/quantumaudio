@@ -6,11 +6,9 @@ quantumaudio package
    :undoc-members:
    :show-inheritance:
 
-Submodules
-----------
+quantumaudio module contents
+----------------------------
 
-quantumaudio.quantumaudio module
---------------------------------
 
 .. automodule:: quantumaudio.quantumaudio
    :members:
