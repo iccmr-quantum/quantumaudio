@@ -23,6 +23,7 @@ version = '0.0.2rc2'
 
 extensions = ["sphinx.ext.todo", "sphinx.ext.viewcode", "sphinx.ext.autodoc", "sphinx.ext.napoleon", "nbsphinx", "nbsphinx_link", "sphinx.ext.mathjax", "IPython.sphinxext.ipython_console_highlighting"]
 
+
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
 
