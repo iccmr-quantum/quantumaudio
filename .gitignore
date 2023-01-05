@@ -8,3 +8,4 @@ quantumaudio/__pycache__/*
 qa/*
 __pycache__/*
 *.zip
+docs/_build/*
