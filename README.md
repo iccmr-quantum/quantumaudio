@@ -13,9 +13,9 @@ It contatins implementations for three representation algorithms cited on the pu
 - SQPAM - Single-Qubit Probability Amplitude Modulation (similar to [FRQI](https://link.springer.com/article/10.1007/s11128-010-0177-y) quantum image representations)
 - QSM - Quantum State Modulation (also known as [FRQA](https://www.researchgate.net/publication/312091720_Flexible_Representation_and_Manipulation_of_Audio_Signals_on_Quantum_Computers) in the literature)
 
-For an introduction to quantum audio please refer to the book chapter [Quantum Representations of Sound: From Mechanical Waves to Quantum Circuits](https://link.springer.com/chapter/10.1007/978-3-031-13909-3_10) by Paulo V. Itaboraí and Eduardo R. Miranda. The chapter also discusses QPAM, SQPAM and QSM, and glances over methods to implement quantum audio signal processing. 
+For an introduction to quantum audio please refer to the book chapter [Quantum Representations of Sound: From Mechanical Waves to Quantum Circuits](https://link.springer.com/chapter/10.1007/978-3-031-13909-3_10) by Paulo V. Itaboraí and Eduardo R. Miranda (draft version [available at ArXiV](https://arxiv.org/pdf/2301.01595.pdf)). The chapter also discusses QPAM, SQPAM and QSM, and glances over methods to implement quantum audio signal processing. 
 
-There is a Jupyter Notebook [tutorial](https://github.com/iccmr-quantum/quantumaudio/blob/main/tutorial_quantum_audio_module.ipynb) showing how the main methods work and general implementation workflow with the package. Additionally, to listen the results, there is a set of [examples](https://github.com/iccmr-quantum/quantumaudio/tree/main/examples_with_supercollider) for interfacing the quantum circuits with [SuperCollider](https://supercollider.github.io/), a powerful synthesis engine for live musical applications.
+Additional documentaion is available [here](https://quantumaudio.readthedocs.io/en/latest/) along with a Jupyter Notebook [tutorial](https://quantumaudio.readthedocs.io/en/latest/tutorial.html) showing how the main methods work and general implementation workflow with the package. Additionally, to listen the results, there is a set of [examples](https://github.com/iccmr-quantum/quantumaudio/tree/main/examples_with_supercollider) for interfacing the quantum circuits with [SuperCollider](https://supercollider.github.io/), a powerful synthesis engine for live musical applications.
 
 ## Dependencies
 
@@ -67,7 +67,7 @@ There is a known bug when installing `pyliblo` packages through `pip install qua
 
 ## Usage
 
-To learn how to use this module, refer to the [tutorial](https://github.com/iccmr-quantum/quantumaudio/blob/main/tutorial_quantum_audio_module.ipynb) notebook.
+To learn how to use this module, refer to the [tutorial](https://quantumaudio.readthedocs.io/en/latest/tutorial.html) notebook.
 
 Both the tutorial and supercollider examples were written as [Jupyter Notebooks](https://jupyter.org/install) that can be read inside this repo, or run in your local Jupyter Notebook server.
 
