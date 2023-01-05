@@ -10,10 +10,13 @@ This page contains the API reference of the quantumaudio module.
 
 Version: 0.0.2rc2
 
-NOTE:
-*****
+..
+    NOTE:
+..
+    *****
 
-If you are looking for documentation on How to Use this package, there is a Jupyter Notebook Tutorial available `Here <https://github.com/iccmr-quantum/quantumaudio/blob/main/tutorial_quantum_audio_module.ipynb>`_.
+..
+    If you are looking for documentation on How to Use this package, there is a Jupyter Notebook Tutorial available `Here <https://github.com/iccmr-quantum/quantumaudio/blob/main/tutorial_quantum_audio_module.ipynb>`_.
 
 
 .. toctree::
@@ -21,13 +24,16 @@ If you are looking for documentation on How to Use this package, there is a Jupy
    :caption: Contents:
 
    modules
-   tutorial_quantum_audio_module
+   Tutorial <tutorial>
    license
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+..
+    Indices and tables
+..
+    ==================
+..
+    * :ref:`genindex`
+..
+    * :ref:`modindex`
+..
+    * :ref:`search`

@@ -1,21 +1,16 @@
 quantumaudio package
 ====================
 
-Submodules
-----------
-
-quantumaudio.quantumaudio module
---------------------------------
-
-.. automodule:: quantumaudio.quantumaudio
+.. automodule:: quantumaudio
    :members:
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
+quantumaudio module contents
+----------------------------
 
-.. automodule:: quantumaudio
+
+.. automodule:: quantumaudio.quantumaudio
    :members:
    :undoc-members:
    :show-inheritance:
