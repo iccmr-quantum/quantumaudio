@@ -1,1 +1,2 @@
 nbsphinx>=0.8.11
+nbsphinx-link
