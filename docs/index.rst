@@ -8,7 +8,7 @@ Welcome to quantumaudio module's API documentation!
 
 This page contains the API reference of the quantumaudio module.
 
-Version: 0.0.2rc2
+Version: 0.0.2
 
 ..
     NOTE:
@@ -25,6 +25,8 @@ Version: 0.0.2rc2
 
    modules
    Tutorial <tutorial>
+   Examples With SuperCollider pt.1 <supercollider1>
+   Examples With SuperCollider pt.2 <supercollider2>
    license
 
 ..
