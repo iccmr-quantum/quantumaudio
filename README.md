@@ -60,6 +60,7 @@ pip install quantumaudio[examples]
 pip3 install quantumaudio[examples]
 ```
 
+## Jupyter Notebook Examples
 Ideally, you would `pip install` the package in your own python environment and then download the latest example/tutorial files from the [releases](https://github.com/iccmr-quantum/quantumaudio/releases) page.
 
 ### NOTE
